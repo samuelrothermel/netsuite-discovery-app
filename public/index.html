@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetSuite-Braintree Integration Discovery</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div id="form-container" class="form-wrapper">
+      <div class="header">
+        <h1>NetSuite-Braintree Integration</h1>
+        <h2>Discovery & Checklist Generator</h2>
+        <p>Complete this form to generate a customized integration checklist</p>
+      </div>
+
+      <form id="discoveryForm">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+          <p id="progressText" class="progress-text">Step 1 of 8</p>
+        </div>
+
+        <!-- SECTION 1: Merchant Info & Emails -->
+        <div class="section active" data-section="1">
+          <h3>1. Merchant & Team Information</h3>
+          
+          <div class="form-group">
+            <label for="merchantName">Merchant/Company Name *</label>
+            <input type="text" id="merchantName" name="merchantName" required placeholder="e.g., Acme Corp">
+          </div>
+
+          <div class="form-group">
+            <label for="merchantEmail">Merchant Email *</label>
+            <input type="email" id="merchantEmail" name="merchantEmail" required placeholder="merchant@company.com">
+          </div>
+
+          <div class="form-group">
+            <label for="teamEmails">Team Member Emails (comma-separated)</label>
+            <textarea id="teamEmails" name="teamEmails" placeholder="john@company.com, jane@company.com" rows="3"></textarea>
+            <small>Leave blank if no additional recipients</small>
+          </div>
+
+          <div class="form-group">
+            <label for="businessModel">Business Model *</label>
+            <select id="businessModel" name="businessModel" required>
+              <option value="">Select...</option>
+              <option value="b2c">B2C (Direct to consumers)</option>
+              <option value="b2b">B2B (Business to business)</option>
+              <option value="hybrid">Hybrid (Multiple models)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- SECTION 2: Processing Timeline -->
+        <div class="section" data-section="2">
+          <h3>2. Current Payment Infrastructure</h3>
+          
+          <div class="form-group">
+            <label for="currentProcessor">Current Payment Processor</label>
+            <input type="text" id="currentProcessor" name="currentProcessor" placeholder="e.g., Authorize.Net, Stripe, CyberSource, etc.">
+            <small>Leave blank if new to payment processing or switching from a non-integrated solution</small>
+          </div>
+
+          <div class="form-group">
+            <label>Do you currently have tokenization/vaulting with your existing processor?</label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="hasExistingVault" value="yes">
+                Yes - we vault payment methods
+              </label>
+              <label>
+                <input type="radio" name="hasExistingVault" value="no">
+                No vaulting
+              </label>
+              <label>
+                <input type="radio" name="hasExistingVault" value="unsure">
+                Not sure
+              </label>
+            </div>
+          </div>
+
+          <div id="migrationGroup2" style="display: none;">
+            <div class="form-group">
+              <label>Do you want to migrate existing vaulted payment methods to Braintree?</label>
+              <div class="radio-group">
+                <label>
+                  <input type="radio" name="wantsMigration" value="yes">
+                  Yes - migrate existing tokens
+                </label>
+                <label>
+                  <input type="radio" name="wantsMigration" value="no">
+                  No - customers will re-enter payment info
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>What customer payment data needs to be migrated?</label>
+              <div class="checkbox-group">
+                <label><input type="checkbox" name="migrateData" value="cards"> Credit/Debit Card Tokens</label>
+                <label><input type="checkbox" name="migrateData" value="paypal"> PayPal Billing Agreements</label>
+                <label><input type="checkbox" name="migrateData" value="ach"> ACH/Bank Account Tokens</label>
+                <label><input type="checkbox" name="migrateData" value="other"> Other Payment Methods</label>
+              </div>
+              <small>Check all that apply. Note: Migration requires coordination with Braintree support.</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: Processing Timeline -->
+        <div class="section" data-section="3">
+          <h3>3. Processing Timeline</h3>
+          <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/articles/get-started/transaction-lifecycle" target="_blank">Transaction Lifecycle</a></p>
+          <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/docs/reference/general/statuses#authorization-expired" target="_blank">Authorization Expiration Timeframes by Payment Method</a></p>
+          <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/articles/control-panel/transactions/managing-authorizations" target="_blank">Managing Authorizations</a></p>
+          
+          
+          <div class="form-group">
+            <label>Typical Time Between Authorization & Capture *</label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="processingTimeline" value="same-day" required>
+                Same-day (e-commerce typical)
+              </label>
+              <label>
+                <input type="radio" name="processingTimeline" value="multi-day">
+                Multi-day (MOTO, B2B typical)
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="needsReauth" name="needsReauth">
+              Will you need reauthorization for expired auths?
+            </label>
+            <small>Check if authorization-to-capture gap >7 days</small>
+          </div>
+        </div>
+
+        <!-- SECTION 4: Advanced Capture -->
+        <div class="section" data-section="4">
+          <h3>4. Partial & Over-Capture</h3>
+          <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/docs/guides/transactions/capture" target="_blank">Learn more about Capturing Transactions</a></p>
+          <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/docs/guides/credit-cards/submit-for-partial-settlement/ruby/" target="_blank">Submit for Partial Settlement (requires approval)</a></p>
+          <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/articles/control-panel/transactions/managing-authorizations#authorization-adjustments-during-settlement" target="_blank">Over-Capture (aka Pre-Auth or Auth Adjustment -- requires approval)</a></p>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="partialCapture" name="partialCapture">
+              Need Partial Capture? (Capture LESS than authorized)
+            </label>
+            <small>Split shipments, drop-shipping. Requires Braintree approval.</small>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="overCapture" name="overCapture">
+              Need Over-Capture? (Capture MORE than authorized)
+            </label>
+            <small>Added shipping, taxes, fees. Requires Braintree approval.</small>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="neitherCapture" name="neitherCapture">
+              Not Applicable (Capture exact amount or re-authorize vaulted payment methods)
+            </label>
+            <small>Standard workflow: capture the exact authorized amount, or create new authorization against vaulted payment method if needed.</small>
+          </div>
+        </div>
+
+        <!-- SECTION 5: L2/L3 -->
+        <div class="section" data-section="5">
+          <h3>5. Level 2/3 Data Processing</h3>
+          <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/docs/reference/general/level-2-and-3-processing/overview/" target="_blank">Learn more about Level 2/3 Processing</a></p>
+          
+          <div class="form-group">
+            <label>Do you sell to businesses (B2B)? *</label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="l2l3Processing" value="yes" required>
+                Yes - primarily B2B
+              </label>
+              <label>
+                <input type="radio" name="l2l3Processing" value="partial">
+                Partial - some B2B, some B2C
+              </label>
+              <label>
+                <input type="radio" name="l2l3Processing" value="no">
+                No - B2C only
+              </label>
+            </div>
+            <small>L2/L3 can reduce interchange rates</small>
+          </div>
+        </div>
+
+        <!-- SECTION 6: ACH & Payment Methods -->
+        <div class="section" data-section="6">
+          <h3>6. ACH & Alternative Payments</h3>
+          <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/articles/guides/payment-methods/ach" target="_blank">Learn more about ACH (requires Braintree Approval)</a> | <a href="https://developer.paypal.com/braintree/docs/guides/payment-methods" target="_blank">Payment Methods</a></p>
+          
+          <div class="form-group">
+            <label>Accept ACH (Bank Transfer) Payments? *</label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="acceptACH" value="yes" required>
+                Yes
+              </label>
+              <label>
+                <input type="radio" name="acceptACH" value="no">
+                No
+              </label>
+            </div>
+          </div>
+
+          <div id="achConfigGroup" style="display: none;">
+            <p class="info-link"> <a href="https://developer.paypal.com/braintree/articles/guides/payment-methods/ach#verification-methods" target="_blank">Learn more about ACH Verification Methods</a></p>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" name="achNetworkCheck">
+                Network Check (verify account ownership upfront)
+              </label>
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" name="achRecurring">
+                Recurring ACH payments (subscriptions)
+              </label>
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" name="achRealtimeStatus">
+                Real-time ACH status updates (webhooks)
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Which Payment Methods Do You Need? *</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="paymentMethods" value="cards" checked disabled> Credit/Debit Cards (always included)</label>
+              <label><input type="checkbox" name="paymentMethods" value="paypal"> PayPal</label>
+              <label><input type="checkbox" name="paymentMethods" value="bnpl"> PayPal Buy Now Pay Later</label>
+              <label><input type="checkbox" name="paymentMethods" value="apple-pay"> Apple Pay</label>
+              <label><input type="checkbox" name="paymentMethods" value="google-pay"> Google Pay</label>
+              <label><input type="checkbox" name="paymentMethods" value="venmo"> Venmo (US only)</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 7: Processing Channels -->
+        <div class="section" data-section="7">
+          <h3>7. Payment Processing Channels</h3>
+          <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/docs/start/overview" target="_blank">Learn more about Integration Options</a></p>
+          
+          <div class="form-group">
+            <label>Where Will You Process Payments? *</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="processingChannels" value="ecommerce" required> eCommerce/SuiteCommerce Advanced</label>
+              <label><input type="checkbox" name="processingChannels" value="moto"> NetSuite Back Office MOTO</label>
+              <label><input type="checkbox" name="processingChannels" value="payment-link"> Payment Link (email invoices)</label>
+              <label><input type="checkbox" name="processingChannels" value="prl"> Braintree Payment Request Link</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 8: Fraud & Security -->
+        <div class="section" data-section="8">
+          <h3>8. Fraud Management & Security</h3>
+          <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/articles/guides/fraud-tools/overview" target="_blank">Learn more about Fraud Tools</a> | <a href="https://developer.paypal.com/braintree/docs/guides/3d-secure" target="_blank">3D Secure</a></p>
+          
+          <div class="form-group">
+            <label for="fraudRate">Typical Chargeback/Fraud Rate (optional)</label>
+            <input type="text" id="fraudRate" name="fraudRate" placeholder="e.g., 0.2%, Unknown">
+            <small>If >0.5%, Fraud Protection Advanced is recommended</small>
+          </div>
+
+          <div class="form-group">
+            <label>Fraud Protection Advanced? *</label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="fraudProtectionAdvanced" value="yes" required>
+                Yes - higher risk or high volume
+              </label>
+              <label>
+                <input type="radio" name="fraudProtectionAdvanced" value="no">
+                No - basic AVS/CVV sufficient
+              </label>
+              <label>
+                <input type="radio" name="fraudProtectionAdvanced" value="unsure">
+                Not sure
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Need 3D Secure 2.0 (SCA)? *</label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="needs3ds" value="yes" required>
+                Yes - EU/UK
+              </label>
+              <label>
+                <input type="radio" name="needs3ds" value="no">
+                No - US
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation & Actions -->
+        <div class="form-actions">
+          <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;">← Back</button>
+          <button type="button" id="nextBtn" class="btn btn-primary">Next →</button>
+          <button type="button" id="downloadBtn" class="btn btn-success" style="display: none;">📋 View Summary</button>
+          <button type="button" id="emailBtn" class="btn btn-success" style="display: none;">✉️ Email Summary (Disabled)</button>
+          <button type="button" id="resetBtn" class="btn btn-secondary" style="display: none;">Reset</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading" style="display: none;">
+      <div class="spinner"></div>
+      <p>Generating checklist...</p>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message" style="display: none;">
+      <h3>✅ Success!</h3>
+      <p id="successText"></p>
+      <button type="button" class="btn btn-primary" onclick="location.reload()">Start Over</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
