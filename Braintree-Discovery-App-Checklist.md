@@ -62,8 +62,10 @@ This section identifies your specific payment processing needs. Reference the Br
 - [ ] **Over-Capture** (e.g., added shipping, taxes, processing fees discovered post-authorization)
 
   - Allows capturing MORE than original authorization amount
+  - **Important:** Over-Capture only applies to Visa and Mastercard brands, and your MCC (Merchant Category Code) must be eligible
   - Reference: Admin Guide, Section 2.19 (p. 116)
   - Use Case examples in Section 3.2 (p. 155): Discount items, additional items, shipping charges added
+  - **How to perform in NetSuite:** Create Sales Order with initial authorization → Add discount/fee item post-authorization → Bill → Capture over-authorized amount
   - Setup Required: Must be enabled by PayPal team (PSD2/regulatory compliance)
   - Limitation: PayPal General Tokens capped at 115% of original auth
   - Braintree Link: https://developer.paypal.com/braintree/docs/guides/credit-cards/overview#overcapture

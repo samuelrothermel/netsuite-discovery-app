@@ -1,7 +1,7 @@
-
 # NetSuite-Braintree Integration Discovery & Checklist Generator
 
 A Node.js Express app that:
+
 1. Captures merchant discovery info + email addresses
 2. Generates dynamically-filtered checklists based on selected features
 3. Exports as DOCX files
@@ -12,7 +12,8 @@ A Node.js Express app that:
 ## Installation & Setup
 
 ### 1. Prerequisites
-- Node.js 16+ 
+
+- Node.js 16+
 - npm
 
 ### 2. Clone/Create Project
@@ -112,17 +113,17 @@ app.get('/', (req, res) => {
 app.post('/api/generate-checklist', async (req, res) => {
   try {
     const formData = req.body;
-    
+
     // Validate required fields
     if (!formData.merchantName || !formData.merchantEmail) {
-      return res.status(400).json({ 
-        error: 'Merchant name and email required' 
+      return res.status(400).json({
+        error: 'Merchant name and email required',
       });
     }
 
     // Generate checklist data (filtered)
     const checklistHtml = checklistService.generateFilteredChecklist(formData);
-    
+
     // Generate DOCX
     const docxBuffer = await checklistService.generateDocx(
       formData.merchantName,
@@ -146,13 +147,12 @@ app.post('/api/generate-checklist', async (req, res) => {
       success: true,
       message: `Checklist generated and sent to ${recipients.length} recipient(s)`,
       recipients: recipients,
-      filename: `Checklist-${formData.merchantName.replace(/\s+/g, '-')}.docx`
+      filename: `Checklist-${formData.merchantName.replace(/\s+/g, '-')}.docx`,
     });
-
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ 
-      error: error.message || 'Failed to generate checklist' 
+    res.status(500).json({
+      error: error.message || 'Failed to generate checklist',
     });
   }
 });
@@ -168,7 +168,7 @@ app.post('/api/download-checklist', async (req, res) => {
 
     // Generate checklist
     const checklistHtml = checklistService.generateFilteredChecklist(formData);
-    
+
     // Generate DOCX
     const docxBuffer = await checklistService.generateDocx(
       formData.merchantName,
@@ -176,11 +176,16 @@ app.post('/api/download-checklist', async (req, res) => {
     );
 
     // Send file
-    const filename = `Checklist-${formData.merchantName.replace(/\s+/g, '-')}.docx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    const filename = `Checklist-${formData.merchantName.replace(
+      /\s+/g,
+      '-'
+    )}.docx`;
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(docxBuffer);
-
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: error.message });
@@ -206,7 +211,18 @@ app.listen(PORT, () => {
 
 ```javascript
 const checklistData = require('../data/checklistData');
-const { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, HeadingLevel, AlignmentType, BorderStyle } = require('docx');
+const {
+  Document,
+  Packer,
+  Paragraph,
+  Table,
+  TableRow,
+  TableCell,
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+  BorderStyle,
+} = require('docx');
 
 class ChecklistService {
   generateFilteredChecklist(formData) {
@@ -222,18 +238,22 @@ class ChecklistService {
 
     sections.forEach(section => {
       html += `<h2>${section.title}</h2>`;
-      
+
       if (section.items) {
         section.items.forEach(item => {
           html += `
             <div style="margin: 10px 0; padding-left: 20px;">
               ☐ ${item.text}
-              ${item.reference ? `<br><em>Reference: ${item.reference}</em>` : ''}
+              ${
+                item.reference
+                  ? `<br><em>Reference: ${item.reference}</em>`
+                  : ''
+              }
             </div>
           `;
         });
       }
-      
+
       html += '<br>';
     });
 
@@ -245,12 +265,15 @@ class ChecklistService {
 
     sections.forEach(section => {
       // Skip entire section if not applicable
-      if (section.visibleIf && !this.evaluateCondition(section.visibleIf, formData)) {
+      if (
+        section.visibleIf &&
+        !this.evaluateCondition(section.visibleIf, formData)
+      ) {
         return;
       }
 
       const filteredSection = { ...section };
-      
+
       // Filter items within section
       if (section.items) {
         filteredSection.items = section.items.filter(item => {
@@ -277,9 +300,11 @@ class ChecklistService {
     const sections = this.parseHtmlToDocxSections(checklistHtml, merchantName);
 
     const doc = new Document({
-      sections: [{
-        children: sections
-      }]
+      sections: [
+        {
+          children: sections,
+        },
+      ],
     });
 
     const buffer = await Packer.toBuffer(doc);
@@ -294,7 +319,7 @@ class ChecklistService {
       new Paragraph({
         text: 'NetSuite-Braintree Integration Checklist',
         heading: HeadingLevel.HEADING_1,
-        spacing: { after: 200 }
+        spacing: { after: 200 },
       })
     );
 
@@ -302,14 +327,14 @@ class ChecklistService {
     children.push(
       new Paragraph({
         text: `Merchant: ${merchantName}`,
-        spacing: { after: 100 }
+        spacing: { after: 100 },
       })
     );
 
     children.push(
       new Paragraph({
         text: `Generated: ${new Date().toLocaleDateString()}`,
-        spacing: { after: 400 }
+        spacing: { after: 400 },
       })
     );
 
@@ -326,7 +351,7 @@ class ChecklistService {
         new Paragraph({
           text: sectionTitle,
           heading: HeadingLevel.HEADING_2,
-          spacing: { before: 200, after: 100 }
+          spacing: { before: 200, after: 100 },
         })
       );
 
@@ -343,7 +368,7 @@ class ChecklistService {
           new Paragraph({
             text: `☐ ${itemText}`,
             spacing: { after: 100 },
-            indent: { left: 400 }
+            indent: { left: 400 },
           })
         );
       }
@@ -353,7 +378,7 @@ class ChecklistService {
     children.push(
       new Paragraph({
         text: '',
-        spacing: { after: 200 }
+        spacing: { after: 200 },
       })
     );
 
@@ -361,21 +386,21 @@ class ChecklistService {
       new Paragraph({
         text: 'Documentation References',
         heading: HeadingLevel.HEADING_2,
-        spacing: { before: 200, after: 100 }
+        spacing: { before: 200, after: 100 },
       })
     );
 
     children.push(
       new Paragraph({
         text: 'Braintree SuitePayments SuiteApp Admin and End User Guide - Version V.42, Release 1.3.51 (October 24, 2025)',
-        spacing: { after: 100 }
+        spacing: { after: 100 },
       })
     );
 
     children.push(
       new Paragraph({
         text: 'Braintree Developer Portal: https://developer.paypal.com/braintree/',
-        spacing: { after: 100 }
+        spacing: { after: 100 },
       })
     );
 
@@ -401,8 +426,8 @@ class EmailService {
       secure: process.env.EMAIL_PORT == 465,
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-      }
+        pass: process.env.EMAIL_PASSWORD,
+      },
     });
   }
 
@@ -432,9 +457,10 @@ class EmailService {
         {
           filename: filename,
           content: docxBuffer,
-          contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        }
-      ]
+          contentType:
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        },
+      ],
     };
 
     try {
@@ -482,8 +508,8 @@ module.exports = {
         { text: 'Processing duration between auth and capture identified' },
         { text: 'Customer bases to migrate identified' },
         { text: 'Historical chargeback/fraud rates documented' },
-        { text: 'Existing tokenization/vaulting assessed' }
-      ]
+        { text: 'Existing tokenization/vaulting assessed' },
+      ],
     },
 
     // PART 2A: AUTH & CAPTURE
@@ -492,80 +518,86 @@ module.exports = {
       items: [
         {
           text: 'Same-day capture (e-commerce typical)',
-          visibleIf: (data) => data.processingTimeline === 'same-day'
+          visibleIf: data => data.processingTimeline === 'same-day',
         },
         {
           text: 'Multi-day capture workflow identified',
-          visibleIf: (data) => data.processingTimeline === 'multi-day'
+          visibleIf: data => data.processingTimeline === 'multi-day',
         },
         {
           text: 'Reauthorization setup evaluated',
-          visibleIf: (data) => data.processingTimeline === 'multi-day',
-          reference: 'Admin Guide, Section 2.18 (p. 111)'
+          visibleIf: data => data.processingTimeline === 'multi-day',
+          reference: 'Admin Guide, Section 2.18 (p. 111)',
         },
         {
           text: 'Tokenization/vaulting needed for extended auth-to-capture gap',
-          visibleIf: (data) => data.processingTimeline === 'multi-day'
-        }
-      ]
+          visibleIf: data => data.processingTimeline === 'multi-day',
+        },
+      ],
     },
 
     // PART 2B: PARTIAL & OVER-CAPTURE
     {
       title: 'Part 2B: Partial & Over-Capture',
-      visibleIf: (data) => data.partialCapture || data.overCapture,
+      visibleIf: data => data.partialCapture || data.overCapture,
       items: [
         {
           text: 'Partial Capture enabled and PayPal team approval obtained',
-          visibleIf: (data) => data.partialCapture,
-          reference: 'Admin Guide, Section 2.19 (p. 116)'
+          visibleIf: data => data.partialCapture,
+          reference: 'Admin Guide, Section 2.19 (p. 116)',
         },
         {
           text: 'Over-Capture enabled and PayPal team approval obtained',
-          visibleIf: (data) => data.overCapture,
-          reference: 'Admin Guide, Section 2.19 (p. 116)'
-        }
-      ]
+          visibleIf: data => data.overCapture,
+          reference: 'Admin Guide, Section 2.19 (p. 116)',
+        },
+      ],
     },
 
     // PART 2C: L2/L3
     {
       title: 'Part 2C: Level 2/3 Data Processing',
-      visibleIf: (data) => data.l2l3Processing,
+      visibleIf: data => data.l2l3Processing,
       items: [
         { text: 'L2/L3 Processing enabled on payment methods' },
-        { text: '"Requires Line-Level Data" checkbox enabled on payment methods' },
+        {
+          text: '"Requires Line-Level Data" checkbox enabled on payment methods',
+        },
         { text: 'Order/PO Number data available for all transactions' },
-        { text: 'Line-item details (description, quantity, unit price) available' },
+        {
+          text: 'Line-item details (description, quantity, unit price) available',
+        },
         { text: 'Tax amount data available' },
         { text: 'Shipping amount data available' },
-        { text: 'Discount amounts data available',
-          reference: 'Admin Guide, Section 5.8 (p. 312)' }
-      ]
+        {
+          text: 'Discount amounts data available',
+          reference: 'Admin Guide, Section 5.8 (p. 312)',
+        },
+      ],
     },
 
     // PART 2D: ACH
     {
       title: 'Part 2D: ACH (Bank Transfer) Processing',
-      visibleIf: (data) => data.acceptACH,
+      visibleIf: data => data.acceptACH,
       items: [
         { text: 'ACH Payment Method created and configured' },
         { text: 'ACH processing enabled on Payment Processing Profile' },
         {
           text: 'Network Check configured (verify account ownership upfront)',
-          visibleIf: (data) => data.achNetworkCheck
+          visibleIf: data => data.achNetworkCheck,
         },
         {
           text: 'Recurring ACH configured',
-          visibleIf: (data) => data.achRecurring
+          visibleIf: data => data.achRecurring,
         },
         {
           text: 'Real-time ACH status webhooks configured',
-          visibleIf: (data) => data.achRealtimeStatus,
-          reference: 'Admin Guide, Section 2.3 (p. 23)'
+          visibleIf: data => data.achRealtimeStatus,
+          reference: 'Admin Guide, Section 2.3 (p. 23)',
         },
-        { text: 'ACH settlement timeline communicated to merchant (1-2 days)' }
-      ]
+        { text: 'ACH settlement timeline communicated to merchant (1-2 days)' },
+      ],
     },
 
     // PART 3: TOKENIZATION
@@ -578,10 +610,13 @@ module.exports = {
         { text: 'Token Retrieval method created (if external e-commerce)' },
         {
           text: 'PayPal/Alternate Payment Vaulting enabled',
-          visibleIf: (data) => data.paymentMethods && (data.paymentMethods.includes('paypal') || data.paymentMethods.includes('venmo'))
+          visibleIf: data =>
+            data.paymentMethods &&
+            (data.paymentMethods.includes('paypal') ||
+              data.paymentMethods.includes('venmo')),
         },
-        { text: 'General Token payment method created' }
-      ]
+        { text: 'General Token payment method created' },
+      ],
     },
 
     // PART 4: FRAUD
@@ -591,17 +626,17 @@ module.exports = {
         { text: 'Basic Fraud Management (AVS/CVV) enabled' },
         {
           text: 'Fraud Protection Advanced enabled and configured',
-          visibleIf: (data) => data.fraudProtectionAdvanced,
-          reference: 'Admin Guide, Section 2.17 (p. 105)'
+          visibleIf: data => data.fraudProtectionAdvanced,
+          reference: 'Admin Guide, Section 2.17 (p. 105)',
         },
         {
           text: '3D Secure 2.0 enabled',
-          visibleIf: (data) => data.needs3ds,
-          reference: 'Admin Guide, Section 2.6 (p. 39)'
+          visibleIf: data => data.needs3ds,
+          reference: 'Admin Guide, Section 2.6 (p. 39)',
         },
         { text: 'AVS/CVV rules configured appropriately' },
-        { text: 'Manual override capability configured for exceptions' }
-      ]
+        { text: 'Manual override capability configured for exceptions' },
+      ],
     },
 
     // PART 5: PROCESSING CHANNELS
@@ -610,21 +645,27 @@ module.exports = {
       items: [
         {
           text: 'eCommerce/SuiteCommerce Advanced configured',
-          visibleIf: (data) => data.processingChannels && data.processingChannels.includes('ecommerce')
+          visibleIf: data =>
+            data.processingChannels &&
+            data.processingChannels.includes('ecommerce'),
         },
         {
           text: 'NetSuite Back Office MOTO configured',
-          visibleIf: (data) => data.processingChannels && data.processingChannels.includes('moto')
+          visibleIf: data =>
+            data.processingChannels && data.processingChannels.includes('moto'),
         },
         {
           text: 'Payment Link configured',
-          visibleIf: (data) => data.processingChannels && data.processingChannels.includes('payment-link')
+          visibleIf: data =>
+            data.processingChannels &&
+            data.processingChannels.includes('payment-link'),
         },
         {
           text: 'Braintree Payment Request Link configured',
-          visibleIf: (data) => data.processingChannels && data.processingChannels.includes('prl')
-        }
-      ]
+          visibleIf: data =>
+            data.processingChannels && data.processingChannels.includes('prl'),
+        },
+      ],
     },
 
     // PART 6: NETSUITE TRANSACTIONS
@@ -635,27 +676,44 @@ module.exports = {
         { text: 'Cash Sale workflows tested' },
         { text: 'Customer Payment workflows tested' },
         { text: 'Invoice Payment Link workflows tested' },
-        { text: 'Customer Deposit workflows tested' }
-      ]
+        { text: 'Customer Deposit workflows tested' },
+      ],
     },
 
     // PART 7: SETUP & CONFIG
     {
       title: 'Part 7: Account Setup & Configuration',
       items: [
-        { text: 'Braintree Sandbox Account created', reference: 'Admin Guide, Section 2.2 (p. 9)' },
-        { text: 'Merchant Account IDs created for each subsidiary/currency combination' },
+        {
+          text: 'Braintree Sandbox Account created',
+          reference: 'Admin Guide, Section 2.2 (p. 9)',
+        },
+        {
+          text: 'Merchant Account IDs created for each subsidiary/currency combination',
+        },
         { text: 'API Keys (Public/Private) generated' },
         { text: 'Tokenization Key generated' },
         { text: 'PayPal Developer Account linked' },
-        { text: 'Braintree SuiteApp installed', reference: 'Admin Guide, Section 2.3 (p. 19)' },
-        { text: 'Chargeback Workflow Bundle installed', reference: 'Admin Guide, Section 2.3 (p. 18)' },
+        {
+          text: 'Braintree SuiteApp installed',
+          reference: 'Admin Guide, Section 2.3 (p. 19)',
+        },
+        {
+          text: 'Chargeback Workflow Bundle installed',
+          reference: 'Admin Guide, Section 2.3 (p. 18)',
+        },
         { text: 'Credit Card Payments feature enabled' },
         { text: 'Braintree plug-in activated' },
-        { text: 'Payment Processing Profile created and configured', reference: 'Admin Guide, Section 2.3 (p. 21)' },
+        {
+          text: 'Payment Processing Profile created and configured',
+          reference: 'Admin Guide, Section 2.3 (p. 21)',
+        },
         { text: 'Payment Methods created and linked' },
-        { text: 'Webhooks configured', reference: 'Admin Guide, Section 2.3 (p. 30)' }
-      ]
+        {
+          text: 'Webhooks configured',
+          reference: 'Admin Guide, Section 2.3 (p. 30)',
+        },
+      ],
     },
 
     // PART 8: SANDBOX TESTING
@@ -670,31 +728,34 @@ module.exports = {
         { text: 'Payment Card Tokenization tested' },
         {
           text: 'ACH Authorization tested',
-          visibleIf: (data) => data.acceptACH
+          visibleIf: data => data.acceptACH,
         },
         {
           text: 'ACH Capture tested',
-          visibleIf: (data) => data.acceptACH
+          visibleIf: data => data.acceptACH,
         },
         {
           text: 'PayPal Authorization tested',
-          visibleIf: (data) => data.paymentMethods && data.paymentMethods.includes('paypal')
+          visibleIf: data =>
+            data.paymentMethods && data.paymentMethods.includes('paypal'),
         },
         {
           text: 'Partial Capture tested',
-          visibleIf: (data) => data.partialCapture
+          visibleIf: data => data.partialCapture,
         },
         {
           text: 'Over-Capture tested',
-          visibleIf: (data) => data.overCapture
+          visibleIf: data => data.overCapture,
         },
         {
           text: 'L2/L3 Data tested',
-          visibleIf: (data) => data.l2l3Processing
+          visibleIf: data => data.l2l3Processing,
         },
         { text: 'Payment Event records verified' },
-        { text: 'Transaction failure scenarios tested (Gateway Rejection, Declines)' }
-      ]
+        {
+          text: 'Transaction failure scenarios tested (Gateway Rejection, Declines)',
+        },
+      ],
     },
 
     // PART 9: GO-LIVE
@@ -711,10 +772,10 @@ module.exports = {
         { text: 'Support escalation path defined' },
         { text: 'Daily transaction review process established' },
         { text: 'Weekly reconciliation process established' },
-        { text: 'Fraud management tuning plan created' }
-      ]
-    }
-  ]
+        { text: 'Fraud management tuning plan created' },
+      ],
+    },
+  ],
 };
 ```
 
@@ -725,281 +786,470 @@ module.exports = {
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NetSuite-Braintree Integration Discovery</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <div id="form-container" class="form-wrapper">
-      <div class="header">
-        <h1>NetSuite-Braintree Integration</h1>
-        <h2>Discovery & Checklist Generator</h2>
-        <p>Complete this form to generate a customized integration checklist</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NetSuite-Braintree Integration Discovery</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div id="form-container" class="form-wrapper">
+        <div class="header">
+          <h1>NetSuite-Braintree Integration</h1>
+          <h2>Discovery & Checklist Generator</h2>
+          <p>
+            Complete this form to generate a customized integration checklist
+          </p>
+        </div>
+
+        <form id="discoveryForm">
+          <!-- Progress Bar -->
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <p id="progressText" class="progress-text">Step 1 of 7</p>
+          </div>
+
+          <!-- SECTION 1: Merchant Info & Emails -->
+          <div class="section active" data-section="1">
+            <h3>1. Merchant & Team Information</h3>
+
+            <div class="form-group">
+              <label for="merchantName">Merchant/Company Name *</label>
+              <input
+                type="text"
+                id="merchantName"
+                name="merchantName"
+                required
+                placeholder="e.g., Acme Corp"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="merchantEmail">Merchant Email *</label>
+              <input
+                type="email"
+                id="merchantEmail"
+                name="merchantEmail"
+                required
+                placeholder="merchant@company.com"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="teamEmails"
+                >Team Member Emails (comma-separated)</label
+              >
+              <textarea
+                id="teamEmails"
+                name="teamEmails"
+                placeholder="john@company.com, jane@company.com"
+                rows="3"
+              ></textarea>
+              <small>Leave blank if no additional recipients</small>
+            </div>
+
+            <div class="form-group">
+              <label for="businessModel">Business Model *</label>
+              <select id="businessModel" name="businessModel" required>
+                <option value="">Select...</option>
+                <option value="b2c">B2C (Direct to consumers)</option>
+                <option value="b2b">B2B (Business to business)</option>
+                <option value="hybrid">Hybrid (Multiple models)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- SECTION 2: Processing Timeline -->
+          <div class="section" data-section="2">
+            <h3>2. Processing Timeline</h3>
+
+            <div class="form-group">
+              <label>Typical Time Between Authorization & Capture *</label>
+              <div class="radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    name="processingTimeline"
+                    value="same-day"
+                    required
+                  />
+                  Same-day (e-commerce typical)
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="processingTimeline"
+                    value="multi-day"
+                  />
+                  Multi-day (MOTO, B2B typical)
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="needsReauth" name="needsReauth" />
+                Will you need reauthorization for expired auths?
+              </label>
+              <small>Check if authorization-to-capture gap >7 days</small>
+            </div>
+          </div>
+
+          <!-- SECTION 3: Advanced Capture -->
+          <div class="section" data-section="3">
+            <h3>3. Partial & Over-Capture</h3>
+
+            <div class="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  id="partialCapture"
+                  name="partialCapture"
+                />
+                Need Partial Capture? (Capture LESS than authorized)
+              </label>
+              <small
+                >Split shipments, drop-shipping. Requires PayPal
+                approval.</small
+              >
+            </div>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="overCapture" name="overCapture" />
+                Need Over-Capture? (Capture MORE than authorized)
+              </label>
+              <small
+                >Added shipping, taxes, fees. Requires PayPal approval.
+                <strong>Note:</strong> Over-Capture only applies to Visa and
+                Mastercard brands, and your MCC (Merchant Category Code) must be
+                eligible.</small
+              >
+              <small style="display: block; margin-top: 5px;"
+                ><strong>How to perform in NetSuite:</strong> Create Sales Order
+                with initial authorization → Add discount/fee item
+                post-authorization → Bill → Capture over-authorized
+                amount</small
+              >
+            </div>
+          </div>
+
+          <!-- SECTION 4: L2/L3 -->
+          <div class="section" data-section="4">
+            <h3>4. Level 2/3 Data Processing</h3>
+
+            <div class="form-group">
+              <label>Do you sell to businesses (B2B)? *</label>
+              <div class="radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    name="l2l3Processing"
+                    value="yes"
+                    required
+                  />
+                  Yes - primarily B2B
+                </label>
+                <label>
+                  <input type="radio" name="l2l3Processing" value="partial" />
+                  Partial - some B2B, some B2C
+                </label>
+                <label>
+                  <input type="radio" name="l2l3Processing" value="no" />
+                  No - B2C only
+                </label>
+              </div>
+              <small>L2/L3 can reduce interchange rates by 0.25%-1.5%</small>
+            </div>
+
+            <div id="l2l3DataGroup" class="form-group" style="display: none;">
+              <label>If Yes: Do you have this data available?</label>
+              <div class="checkbox-group">
+                <label
+                  ><input type="checkbox" name="l2l3Data" value="po" /> Purchase
+                  Order / PO numbers</label
+                >
+                <label
+                  ><input type="checkbox" name="l2l3Data" value="lineItems" />
+                  Line-item details (description, qty, unit price)</label
+                >
+                <label
+                  ><input type="checkbox" name="l2l3Data" value="tax" /> Tax
+                  amount</label
+                >
+                <label
+                  ><input type="checkbox" name="l2l3Data" value="shipping" />
+                  Shipping amount</label
+                >
+                <label
+                  ><input type="checkbox" name="l2l3Data" value="discount" />
+                  Discount amounts</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 5: ACH & Payment Methods -->
+          <div class="section" data-section="5">
+            <h3>5. ACH & Alternative Payments</h3>
+
+            <div class="form-group">
+              <label>Accept ACH (Bank Transfer) Payments? *</label>
+              <div class="radio-group">
+                <label>
+                  <input type="radio" name="acceptACH" value="yes" required />
+                  Yes
+                </label>
+                <label>
+                  <input type="radio" name="acceptACH" value="no" />
+                  No
+                </label>
+              </div>
+            </div>
+
+            <div id="achConfigGroup" style="display: none;">
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" name="achNetworkCheck" />
+                  Network Check (verify account ownership upfront)
+                </label>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" name="achRecurring" />
+                  Recurring ACH payments (subscriptions)
+                </label>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" name="achRealtimeStatus" />
+                  Real-time ACH status updates (webhooks)
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Which Payment Methods Do You Need? *</label>
+              <div class="checkbox-group">
+                <label
+                  ><input
+                    type="checkbox"
+                    name="paymentMethods"
+                    value="cards"
+                    checked
+                    disabled
+                  />
+                  Credit/Debit Cards (always included)</label
+                >
+                <label
+                  ><input
+                    type="checkbox"
+                    name="paymentMethods"
+                    value="paypal"
+                  />
+                  PayPal</label
+                >
+                <label
+                  ><input type="checkbox" name="paymentMethods" value="bnpl" />
+                  PayPal Buy Now Pay Later</label
+                >
+                <label
+                  ><input
+                    type="checkbox"
+                    name="paymentMethods"
+                    value="apple-pay"
+                  />
+                  Apple Pay</label
+                >
+                <label
+                  ><input
+                    type="checkbox"
+                    name="paymentMethods"
+                    value="google-pay"
+                  />
+                  Google Pay</label
+                >
+                <label
+                  ><input type="checkbox" name="paymentMethods" value="venmo" />
+                  Venmo (US only)</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 6: Processing Channels -->
+          <div class="section" data-section="6">
+            <h3>6. Payment Processing Channels</h3>
+
+            <div class="form-group">
+              <label>Where Will You Process Payments? *</label>
+              <div class="checkbox-group">
+                <label
+                  ><input
+                    type="checkbox"
+                    name="processingChannels"
+                    value="ecommerce"
+                    required
+                  />
+                  eCommerce/SuiteCommerce Advanced</label
+                >
+                <label
+                  ><input
+                    type="checkbox"
+                    name="processingChannels"
+                    value="moto"
+                  />
+                  NetSuite Back Office MOTO</label
+                >
+                <label
+                  ><input
+                    type="checkbox"
+                    name="processingChannels"
+                    value="payment-link"
+                  />
+                  Payment Link (email invoices)</label
+                >
+                <label
+                  ><input
+                    type="checkbox"
+                    name="processingChannels"
+                    value="prl"
+                  />
+                  Braintree Payment Request Link</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 7: Fraud & Security -->
+          <div class="section" data-section="7">
+            <h3>7. Fraud Management & Security</h3>
+
+            <div class="form-group">
+              <label for="fraudRate"
+                >Typical Chargeback/Fraud Rate (optional)</label
+              >
+              <input
+                type="text"
+                id="fraudRate"
+                name="fraudRate"
+                placeholder="e.g., 0.2%, Unknown"
+              />
+              <small>If >0.5%, Fraud Protection Advanced is recommended</small>
+            </div>
+
+            <div class="form-group">
+              <label>Fraud Protection Advanced? *</label>
+              <div class="radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    name="fraudProtectionAdvanced"
+                    value="yes"
+                    required
+                  />
+                  Yes - higher risk or high volume
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="fraudProtectionAdvanced"
+                    value="no"
+                  />
+                  No - basic AVS/CVV sufficient
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="fraudProtectionAdvanced"
+                    value="unsure"
+                  />
+                  Not sure
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Need 3D Secure 2.0 (SCA)? *</label>
+              <div class="radio-group">
+                <label>
+                  <input type="radio" name="needs3ds" value="yes" required />
+                  Yes - EU/UK or high-value CNPS
+                </label>
+                <label>
+                  <input type="radio" name="needs3ds" value="no" />
+                  No - US/low-risk only
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation & Actions -->
+          <div class="form-actions">
+            <button
+              type="button"
+              id="backBtn"
+              class="btn btn-secondary"
+              style="display: none;"
+            >
+              ← Back
+            </button>
+            <button type="button" id="nextBtn" class="btn btn-primary">
+              Next →
+            </button>
+            <button
+              type="button"
+              id="downloadBtn"
+              class="btn btn-success"
+              style="display: none;"
+            >
+              ⬇️ Download Checklist
+            </button>
+            <button
+              type="button"
+              id="emailBtn"
+              class="btn btn-success"
+              style="display: none;"
+            >
+              ✉️ Email Checklist
+            </button>
+            <button
+              type="button"
+              id="resetBtn"
+              class="btn btn-secondary"
+              style="display: none;"
+            >
+              Reset
+            </button>
+          </div>
+        </form>
       </div>
 
-      <form id="discoveryForm">
-        <!-- Progress Bar -->
-        <div class="progress-container">
-          <div class="progress-bar">
-            <div id="progressFill" class="progress-fill"></div>
-          </div>
-          <p id="progressText" class="progress-text">Step 1 of 7</p>
-        </div>
+      <!-- Loading Indicator -->
+      <div id="loadingIndicator" class="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>Generating checklist...</p>
+      </div>
 
-        <!-- SECTION 1: Merchant Info & Emails -->
-        <div class="section active" data-section="1">
-          <h3>1. Merchant & Team Information</h3>
-          
-          <div class="form-group">
-            <label for="merchantName">Merchant/Company Name *</label>
-            <input type="text" id="merchantName" name="merchantName" required placeholder="e.g., Acme Corp">
-          </div>
-
-          <div class="form-group">
-            <label for="merchantEmail">Merchant Email *</label>
-            <input type="email" id="merchantEmail" name="merchantEmail" required placeholder="merchant@company.com">
-          </div>
-
-          <div class="form-group">
-            <label for="teamEmails">Team Member Emails (comma-separated)</label>
-            <textarea id="teamEmails" name="teamEmails" placeholder="john@company.com, jane@company.com" rows="3"></textarea>
-            <small>Leave blank if no additional recipients</small>
-          </div>
-
-          <div class="form-group">
-            <label for="businessModel">Business Model *</label>
-            <select id="businessModel" name="businessModel" required>
-              <option value="">Select...</option>
-              <option value="b2c">B2C (Direct to consumers)</option>
-              <option value="b2b">B2B (Business to business)</option>
-              <option value="hybrid">Hybrid (Multiple models)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- SECTION 2: Processing Timeline -->
-        <div class="section" data-section="2">
-          <h3>2. Processing Timeline</h3>
-          
-          <div class="form-group">
-            <label>Typical Time Between Authorization & Capture *</label>
-            <div class="radio-group">
-              <label>
-                <input type="radio" name="processingTimeline" value="same-day" required>
-                Same-day (e-commerce typical)
-              </label>
-              <label>
-                <input type="radio" name="processingTimeline" value="multi-day">
-                Multi-day (MOTO, B2B typical)
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="needsReauth" name="needsReauth">
-              Will you need reauthorization for expired auths?
-            </label>
-            <small>Check if authorization-to-capture gap >7 days</small>
-          </div>
-        </div>
-
-        <!-- SECTION 3: Advanced Capture -->
-        <div class="section" data-section="3">
-          <h3>3. Partial & Over-Capture</h3>
-          
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="partialCapture" name="partialCapture">
-              Need Partial Capture? (Capture LESS than authorized)
-            </label>
-            <small>Split shipments, drop-shipping. Requires PayPal approval.</small>
-          </div>
-
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="overCapture" name="overCapture">
-              Need Over-Capture? (Capture MORE than authorized)
-            </label>
-            <small>Added shipping, taxes, fees. Requires PayPal approval.</small>
-          </div>
-        </div>
-
-        <!-- SECTION 4: L2/L3 -->
-        <div class="section" data-section="4">
-          <h3>4. Level 2/3 Data Processing</h3>
-          
-          <div class="form-group">
-            <label>Do you sell to businesses (B2B)? *</label>
-            <div class="radio-group">
-              <label>
-                <input type="radio" name="l2l3Processing" value="yes" required>
-                Yes - primarily B2B
-              </label>
-              <label>
-                <input type="radio" name="l2l3Processing" value="partial">
-                Partial - some B2B, some B2C
-              </label>
-              <label>
-                <input type="radio" name="l2l3Processing" value="no">
-                No - B2C only
-              </label>
-            </div>
-            <small>L2/L3 can reduce interchange rates by 0.25%-1.5%</small>
-          </div>
-
-          <div id="l2l3DataGroup" class="form-group" style="display: none;">
-            <label>If Yes: Do you have this data available?</label>
-            <div class="checkbox-group">
-              <label><input type="checkbox" name="l2l3Data" value="po"> Purchase Order / PO numbers</label>
-              <label><input type="checkbox" name="l2l3Data" value="lineItems"> Line-item details (description, qty, unit price)</label>
-              <label><input type="checkbox" name="l2l3Data" value="tax"> Tax amount</label>
-              <label><input type="checkbox" name="l2l3Data" value="shipping"> Shipping amount</label>
-              <label><input type="checkbox" name="l2l3Data" value="discount"> Discount amounts</label>
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION 5: ACH & Payment Methods -->
-        <div class="section" data-section="5">
-          <h3>5. ACH & Alternative Payments</h3>
-          
-          <div class="form-group">
-            <label>Accept ACH (Bank Transfer) Payments? *</label>
-            <div class="radio-group">
-              <label>
-                <input type="radio" name="acceptACH" value="yes" required>
-                Yes
-              </label>
-              <label>
-                <input type="radio" name="acceptACH" value="no">
-                No
-              </label>
-            </div>
-          </div>
-
-          <div id="achConfigGroup" style="display: none;">
-            <div class="form-group">
-              <label>
-                <input type="checkbox" name="achNetworkCheck">
-                Network Check (verify account ownership upfront)
-              </label>
-            </div>
-            <div class="form-group">
-              <label>
-                <input type="checkbox" name="achRecurring">
-                Recurring ACH payments (subscriptions)
-              </label>
-            </div>
-            <div class="form-group">
-              <label>
-                <input type="checkbox" name="achRealtimeStatus">
-                Real-time ACH status updates (webhooks)
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Which Payment Methods Do You Need? *</label>
-            <div class="checkbox-group">
-              <label><input type="checkbox" name="paymentMethods" value="cards" checked disabled> Credit/Debit Cards (always included)</label>
-              <label><input type="checkbox" name="paymentMethods" value="paypal"> PayPal</label>
-              <label><input type="checkbox" name="paymentMethods" value="bnpl"> PayPal Buy Now Pay Later</label>
-              <label><input type="checkbox" name="paymentMethods" value="apple-pay"> Apple Pay</label>
-              <label><input type="checkbox" name="paymentMethods" value="google-pay"> Google Pay</label>
-              <label><input type="checkbox" name="paymentMethods" value="venmo"> Venmo (US only)</label>
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION 6: Processing Channels -->
-        <div class="section" data-section="6">
-          <h3>6. Payment Processing Channels</h3>
-          
-          <div class="form-group">
-            <label>Where Will You Process Payments? *</label>
-            <div class="checkbox-group">
-              <label><input type="checkbox" name="processingChannels" value="ecommerce" required> eCommerce/SuiteCommerce Advanced</label>
-              <label><input type="checkbox" name="processingChannels" value="moto"> NetSuite Back Office MOTO</label>
-              <label><input type="checkbox" name="processingChannels" value="payment-link"> Payment Link (email invoices)</label>
-              <label><input type="checkbox" name="processingChannels" value="prl"> Braintree Payment Request Link</label>
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION 7: Fraud & Security -->
-        <div class="section" data-section="7">
-          <h3>7. Fraud Management & Security</h3>
-          
-          <div class="form-group">
-            <label for="fraudRate">Typical Chargeback/Fraud Rate (optional)</label>
-            <input type="text" id="fraudRate" name="fraudRate" placeholder="e.g., 0.2%, Unknown">
-            <small>If >0.5%, Fraud Protection Advanced is recommended</small>
-          </div>
-
-          <div class="form-group">
-            <label>Fraud Protection Advanced? *</label>
-            <div class="radio-group">
-              <label>
-                <input type="radio" name="fraudProtectionAdvanced" value="yes" required>
-                Yes - higher risk or high volume
-              </label>
-              <label>
-                <input type="radio" name="fraudProtectionAdvanced" value="no">
-                No - basic AVS/CVV sufficient
-              </label>
-              <label>
-                <input type="radio" name="fraudProtectionAdvanced" value="unsure">
-                Not sure
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Need 3D Secure 2.0 (SCA)? *</label>
-            <div class="radio-group">
-              <label>
-                <input type="radio" name="needs3ds" value="yes" required>
-                Yes - EU/UK or high-value CNPS
-              </label>
-              <label>
-                <input type="radio" name="needs3ds" value="no">
-                No - US/low-risk only
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Navigation & Actions -->
-        <div class="form-actions">
-          <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;">← Back</button>
-          <button type="button" id="nextBtn" class="btn btn-primary">Next →</button>
-          <button type="button" id="downloadBtn" class="btn btn-success" style="display: none;">⬇️ Download Checklist</button>
-          <button type="button" id="emailBtn" class="btn btn-success" style="display: none;">✉️ Email Checklist</button>
-          <button type="button" id="resetBtn" class="btn btn-secondary" style="display: none;">Reset</button>
-        </div>
-      </form>
+      <!-- Success Message -->
+      <div id="successMessage" class="success-message" style="display: none;">
+        <h3>✅ Success!</h3>
+        <p id="successText"></p>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="location.reload()"
+        >
+          Start Over
+        </button>
+      </div>
     </div>
 
-    <!-- Loading Indicator -->
-    <div id="loadingIndicator" class="loading" style="display: none;">
-      <div class="spinner"></div>
-      <p>Generating checklist...</p>
-    </div>
-
-    <!-- Success Message -->
-    <div id="successMessage" class="success-message" style="display: none;">
-      <h3>✅ Success!</h3>
-      <p id="successText"></p>
-      <button type="button" class="btn btn-primary" onclick="location.reload()">Start Over</button>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
-</body>
+    <script src="app.js"></script>
+  </body>
 </html>
 ```
 
@@ -1140,8 +1390,8 @@ body {
   color: var(--color-text);
 }
 
-.form-group input[type="text"],
-.form-group input[type="email"],
+.form-group input[type='text'],
+.form-group input[type='email'],
 .form-group select,
 .form-group textarea {
   width: 100%;
@@ -1155,8 +1405,8 @@ body {
   transition: border-color 0.2s;
 }
 
-.form-group input[type="text"]:focus,
-.form-group input[type="email"]:focus,
+.form-group input[type='text']:focus,
+.form-group input[type='email']:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
@@ -1188,8 +1438,8 @@ body {
   cursor: pointer;
 }
 
-.radio-group input[type="radio"],
-.checkbox-group input[type="checkbox"] {
+.radio-group input[type='radio'],
+.checkbox-group input[type='checkbox'] {
   margin-right: var(--spacing-8);
   cursor: pointer;
   accent-color: var(--color-primary);
@@ -1265,8 +1515,12 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Success Message */
@@ -1320,7 +1574,7 @@ body {
 const state = {
   currentSection: 1,
   totalSections: 7,
-  formData: {}
+  formData: {},
 };
 
 // DOM Elements
@@ -1364,7 +1618,10 @@ function setupConditionalFields() {
 
   // L2/L3 Data Group
   const l2l3Group = document.getElementById('l2l3DataGroup');
-  if (formData.l2l3Processing === 'yes' || formData.l2l3Processing === 'partial') {
+  if (
+    formData.l2l3Processing === 'yes' ||
+    formData.l2l3Processing === 'partial'
+  ) {
     l2l3Group.style.display = 'block';
   } else {
     l2l3Group.style.display = 'none';
@@ -1385,8 +1642,12 @@ function getFormData() {
   const data = {
     merchantName: formData.get('merchantName'),
     merchantEmail: formData.get('merchantEmail'),
-    teamEmails: formData.get('teamEmails') 
-      ? formData.get('teamEmails').split(',').map(e => e.trim()).filter(e => e)
+    teamEmails: formData.get('teamEmails')
+      ? formData
+          .get('teamEmails')
+          .split(',')
+          .map(e => e.trim())
+          .filter(e => e)
       : [],
     businessModel: formData.get('businessModel'),
     processingTimeline: formData.get('processingTimeline'),
@@ -1403,7 +1664,7 @@ function getFormData() {
     processingChannels: formData.getAll('processingChannels'),
     fraudRate: formData.get('fraudRate'),
     fraudProtectionAdvanced: formData.get('fraudProtectionAdvanced'),
-    needs3ds: formData.get('needs3ds')
+    needs3ds: formData.get('needs3ds'),
   };
 
   state.formData = data;
@@ -1412,13 +1673,17 @@ function getFormData() {
 
 // Validation
 function validateSection(sectionNumber) {
-  const section = document.querySelector(`.section[data-section="${sectionNumber}"]`);
+  const section = document.querySelector(
+    `.section[data-section="${sectionNumber}"]`
+  );
   const requiredFields = section.querySelectorAll('[required]');
-  
+
   let isValid = true;
   requiredFields.forEach(field => {
     if (field.type === 'radio') {
-      const radioGroup = document.querySelectorAll(`input[name="${field.name}"]`);
+      const radioGroup = document.querySelectorAll(
+        `input[name="${field.name}"]`
+      );
       const isChecked = Array.from(radioGroup).some(r => r.checked);
       if (!isChecked) {
         field.classList.add('error');
@@ -1426,8 +1691,13 @@ function validateSection(sectionNumber) {
       } else {
         field.classList.remove('error');
       }
-    } else if (field.type === 'checkbox' && field.name === 'processingChannels') {
-      const checkboxes = document.querySelectorAll(`input[name="${field.name}"]:not(:disabled)`);
+    } else if (
+      field.type === 'checkbox' &&
+      field.name === 'processingChannels'
+    ) {
+      const checkboxes = document.querySelectorAll(
+        `input[name="${field.name}"]:not(:disabled)`
+      );
       const isChecked = Array.from(checkboxes).some(c => c.checked);
       if (!isChecked) {
         field.classList.add('error');
@@ -1472,7 +1742,9 @@ function showSection(sectionNumber) {
     section.classList.remove('active');
   });
 
-  const targetSection = document.querySelector(`.section[data-section="${sectionNumber}"]`);
+  const targetSection = document.querySelector(
+    `.section[data-section="${sectionNumber}"]`
+  );
   if (targetSection) {
     targetSection.classList.add('active');
   }
@@ -1526,7 +1798,7 @@ async function downloadChecklist() {
     const response = await fetch('/api/download-checklist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(state.formData)
+      body: JSON.stringify(state.formData),
     });
 
     if (!response.ok) throw new Error('Download failed');
@@ -1535,7 +1807,10 @@ async function downloadChecklist() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Checklist-${state.formData.merchantName.replace(/\s+/g, '-')}.docx`;
+    a.download = `Checklist-${state.formData.merchantName.replace(
+      /\s+/g,
+      '-'
+    )}.docx`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
@@ -1565,7 +1840,7 @@ async function emailChecklist() {
     const response = await fetch('/api/generate-checklist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(state.formData)
+      body: JSON.stringify(state.formData),
     });
 
     const result = await response.json();
@@ -1626,4 +1901,3 @@ All are one `git push` away. Each has free tier support for small Node apps.
 ✅ Progress tracking  
 ✅ Form validation  
 ✅ Download OR email workflows
-
