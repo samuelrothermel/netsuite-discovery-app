@@ -10,7 +10,7 @@ async function loadChecklist() {
   if (!formDataJson) {
     document.getElementById('checklistContent').innerHTML = `
       <div class="highlight-box">
-        <p><strong>⚠️ No form data found.</strong></p>
+        <p><strong>No form data found.</strong></p>
         <p>Please complete the discovery form first.</p>
         <button onclick="window.location.href='/'" class="btn btn-primary">Go to Form</button>
       </div>
@@ -33,7 +33,7 @@ async function loadChecklist() {
     console.error('Error loading checklist:', error);
     document.getElementById('checklistContent').innerHTML = `
       <div class="highlight-box">
-        <p><strong>⚠️ Error loading checklist data.</strong></p>
+        <p><strong>Error loading checklist data.</strong></p>
         <p>Please try again or contact support.</p>
       </div>
     `;
@@ -78,64 +78,6 @@ function renderFilteredChecklist(sections, formData) {
 
   // Add configuration review summary
   html += generateConfigurationReview(formData);
-
-  // Add implementation guide header
-  html += '<h2>Implementation Guide</h2>';
-  html +=
-    '<p>The following sections provide specific implementation guidance for your selected features, including references to the Braintree Developer Documentation and NetSuite SuitePayments Admin Guide.</p>';
-
-  // Process each section - skip Part 1 (Discovery)
-  sections.forEach(section => {
-    // Skip Part 1: Pre-Integration Discovery
-    if (
-      section.title &&
-      section.title.includes('Part 1: Pre-Integration Discovery')
-    ) {
-      return;
-    }
-
-    // Check if section should be visible
-    if (section.visibleIf && !section.visibleIf(formData)) {
-      return; // Skip this section
-    }
-
-    // Filter items within the section
-    const visibleItems = section.items.filter(item => {
-      if (!item.visibleIf) return true;
-      return item.visibleIf(formData);
-    });
-
-    // Only render section if it has visible items
-    if (visibleItems.length > 0) {
-      html += `<h2>${section.title}</h2>`;
-
-      if (section.description) {
-        html += `<p><strong>Overview:</strong> ${section.description}</p>`;
-      }
-
-      if (section.reference) {
-        html += `<p style="color: #666;">📖 <strong>Reference:</strong> ${section.reference}</p>`;
-      }
-
-      html += '<ul>';
-
-      visibleItems.forEach(item => {
-        const itemText = typeof item === 'string' ? item : item.text;
-        html += `<li>${itemText}`;
-
-        if (item.reference) {
-          html += `<br><small style="color: #666;">📖 Admin Guide: ${item.reference}</small>`;
-        }
-        if (item.link) {
-          html += `<br><small><a href="${item.link}" target="_blank">🔗 Developer Docs: View Documentation</a></small>`;
-        }
-
-        html += '</li>';
-      });
-
-      html += '</ul>';
-    }
-  });
 
   // Add next steps and resources
   html += generateNextSteps();
