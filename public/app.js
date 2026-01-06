@@ -38,6 +38,24 @@ function attachEventListeners() {
   document.querySelectorAll('input, select, textarea').forEach(field => {
     field.addEventListener('change', setupConditionalFields);
   });
+
+  // Handle mutual exclusivity for fraud protection
+  const fraudPremium = document.getElementById('fraudPremium');
+  const fraudAdvanced = document.getElementById('fraudAdvanced');
+
+  if (fraudPremium && fraudAdvanced) {
+    fraudPremium.addEventListener('change', function () {
+      if (this.checked) {
+        fraudAdvanced.checked = false;
+      }
+    });
+
+    fraudAdvanced.addEventListener('change', function () {
+      if (this.checked) {
+        fraudPremium.checked = false;
+      }
+    });
+  }
 }
 
 // Email Disabled Message
@@ -125,8 +143,7 @@ function getFormData() {
     ecommercePlatform: formData.get('ecommercePlatform'),
     needsOrderSync: formData.get('needsOrderSync'),
     syncOrderData: formData.getAll('syncOrderData'),
-    fraudRate: formData.get('fraudRate'),
-    fraudProtectionAdvanced: formData.get('fraudProtectionAdvanced'),
+    fraudProtection: formData.getAll('fraudProtection'),
     needs3ds: formData.get('needs3ds'),
   };
 
@@ -175,6 +192,20 @@ function validateSection(sectionNumber) {
       field.classList.remove('error');
     }
   });
+
+  // Special validation for fraud protection - at least one must be selected
+  if (sectionNumber === 8) {
+    const fraudCheckboxes = document.querySelectorAll(
+      'input[name="fraudProtection"]'
+    );
+    const isFraudChecked = Array.from(fraudCheckboxes).some(c => c.checked);
+    if (!isFraudChecked) {
+      fraudCheckboxes.forEach(cb => cb.classList.add('error'));
+      isValid = false;
+    } else {
+      fraudCheckboxes.forEach(cb => cb.classList.remove('error'));
+    }
+  }
 
   return isValid;
 }

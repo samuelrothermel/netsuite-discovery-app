@@ -316,20 +316,21 @@
           
           <div class="form-group">
             <label>Fraud Protection Required? *</label>
-            <div class="radio-group">
+            <div class="checkbox-group">
               <label>
-                <input type="radio" name="fraudProtectionAdvanced" value="no" required>
+                <input type="checkbox" name="fraudProtection" value="avs-cvv" id="fraudAVSCVV">
                 AVS / CVV
               </label>
               <label>
-                <input type="radio" name="fraudProtectionAdvanced" value="premium">
+                <input type="checkbox" name="fraudProtection" value="premium" id="fraudPremium">
                 Fraud Protection Premium
               </label>
               <label>
-                <input type="radio" name="fraudProtectionAdvanced" value="yes">
+                <input type="checkbox" name="fraudProtection" value="advanced" id="fraudAdvanced">
                 Fraud Protection Advanced (Paid)
               </label>
             </div>
+            <small>Note: Fraud Protection Premium and Advanced cannot be selected together</small>
           </div>
 
           <div class="form-group">
