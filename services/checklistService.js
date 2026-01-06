@@ -2,8 +2,26 @@ const fs = require('fs');
 const path = require('path');
 const { Document, Packer, Paragraph, HeadingLevel } = require('docx');
 const checklistData = require('../data/checklistData');
+const MarkdownParserService = require('./markdownParserService');
 
 class ChecklistService {
+  constructor() {
+    this.markdownParser = new MarkdownParserService();
+    this.markdownPath = path.join(
+      __dirname,
+      '..',
+      'braintree-integration-reference-v2.md'
+    );
+
+    // Parse markdown file on initialization
+    try {
+      this.markdownParser.parseMarkdownFile(this.markdownPath);
+      console.log('✓ Loaded markdown reference file v2');
+    } catch (error) {
+      console.warn('Could not load markdown reference file:', error.message);
+    }
+  }
+
   generateFilteredChecklist(formData) {
     // Generate a dynamic checklist based on user selections
     return this.generateDynamicChecklist(formData);
@@ -29,15 +47,17 @@ class ChecklistService {
       checklist += `- **Same-Day Capture** - Transactions will be authorized and captured immediately\n`;
     } else if (formData.processingTimeline === 'multi-day') {
       checklist += `- **Multi-Day Capture** - Authorization and capture will happen on different days\n`;
-      if (formData.needsReauth) {
+      // Check for both boolean true (from checkboxes) and 'yes' string
+      if (formData.needsReauth === true || formData.needsReauth === 'yes') {
         checklist += `- **Reauthorization** required for expired authorizations\n`;
       }
     }
 
-    if (formData.partialCapture) {
+    // Check for both boolean true (from checkboxes) and 'yes' string
+    if (formData.partialCapture === true || formData.partialCapture === 'yes') {
       checklist += `- **Partial Capture** enabled - Can capture less than authorized amount\n`;
     }
-    if (formData.overCapture) {
+    if (formData.overCapture === true || formData.overCapture === 'yes') {
       checklist += `- **Over-Capture** enabled - Can capture up to 115% of authorized amount\n`;
     }
 
@@ -103,56 +123,115 @@ class ChecklistService {
 
     checklist += `\n---\n\n`;
     checklist += `## Implementation Guide\n\n`;
-    checklist += `The following sections provide specific implementation guidance for your selected features, including references to the Braintree Developer Documentation and NetSuite SuitePayments Admin Guide.\n\n`;
+    checklist += `The following sections provide specific implementation guidance for your selected features. These sections have been automatically selected based on your requirements to ensure you only see relevant information.\n\n`;
 
-    // Process dynamic sections from checklistData - skip Part 1 (Discovery)
-    checklistData.sections.forEach((section, index) => {
-      // Skip Part 1: Pre-Integration Discovery
-      if (
-        section.title &&
-        section.title.includes('Part 1: Pre-Integration Discovery')
-      ) {
-        return;
-      }
+    // Generate tags from form data
+    const userTags = this.markdownParser.mapFormDataToTags(formData);
+    const complexity = this.markdownParser.determineComplexity(
+      userTags,
+      formData
+    );
 
-      // Check if section should be visible
-      if (section.visibleIf && !section.visibleIf(formData)) {
-        return; // Skip this section
-      }
+    // Add complexity indicator
+    const complexityEmoji = {
+      simple: '✅',
+      moderate: '⚠️',
+      complex: '🔧',
+    };
+    const complexityLabel = {
+      simple: 'Simple - Standard configuration with minimal dependencies',
+      moderate:
+        'Moderate - Standard configuration with some additional features',
+      complex:
+        'Complex - Advanced setup with multiple integrations and features',
+    };
 
-      // Filter items within the section
-      const visibleItems = section.items.filter(item => {
-        if (!item.visibleIf) return true;
-        return item.visibleIf(formData);
-      });
+    checklist += `### Integration Complexity: ${
+      complexityEmoji[complexity]
+    } ${complexity.toUpperCase()}\n\n`;
+    checklist += `${complexityLabel[complexity]}\n\n`;
+    checklist += `**Your Configuration Tags:** ${userTags.join(', ')}\n\n`;
+    checklist += `---\n\n`;
 
-      // Only include section if it has visible items
-      if (visibleItems.length > 0) {
-        checklist += `## ${section.title}\n\n`;
-        if (section.description) {
-          checklist += `**Overview:** ${section.description}\n\n`;
-        }
-        if (section.reference) {
-          checklist += `📖 **Reference:** ${section.reference}\n\n`;
-        }
+    // Get relevant sections based on tags
+    try {
+      const relevantSections =
+        this.markdownParser.filterSectionsByTags(userTags);
 
-        visibleItems.forEach(item => {
-          const itemText = typeof item === 'string' ? item : item.text;
-          checklist += `- ${itemText}`;
+      if (relevantSections && relevantSections.length > 0) {
+        checklist += `### Relevant Sections (${relevantSections.length} sections matched)\n\n`;
 
-          if (item.reference) {
-            checklist += `\n  - 📖 Admin Guide: ${item.reference}`;
+        relevantSections.forEach(section => {
+          // Format and add section content
+          const formattedContent =
+            this.markdownParser.formatSectionContent(section);
+
+          checklist += `## ${section.title}\n\n`;
+
+          // Show tags for transparency
+          if (
+            section.tags &&
+            section.tags.length > 0 &&
+            !section.tags.includes('general reference')
+          ) {
+            checklist += `*Tags: ${section.tags.join(', ')}*\n\n`;
           }
-          if (item.link) {
-            checklist += `\n  - 🔗 Developer Docs: ${item.link}`;
-          }
 
-          checklist += `\n`;
+          checklist += formattedContent;
+          checklist += `\n\n`;
         });
+      } else {
+        // Fallback to old system if markdown parsing failed
+        checklist += `*Using legacy implementation guide format*\n\n`;
 
-        checklist += `\n`;
+        checklistData.sections.forEach((section, index) => {
+          if (
+            section.title &&
+            section.title.includes('Part 1: Pre-Integration Discovery')
+          ) {
+            return;
+          }
+
+          if (section.visibleIf && !section.visibleIf(formData)) {
+            return;
+          }
+
+          const visibleItems = section.items.filter(item => {
+            if (!item.visibleIf) return true;
+            return item.visibleIf(formData);
+          });
+
+          if (visibleItems.length > 0) {
+            checklist += `## ${section.title}\n\n`;
+            if (section.description) {
+              checklist += `**Overview:** ${section.description}\n\n`;
+            }
+            if (section.reference) {
+              checklist += `📖 **Reference:** ${section.reference}\n\n`;
+            }
+
+            visibleItems.forEach(item => {
+              const itemText = typeof item === 'string' ? item : item.text;
+              checklist += `- ${itemText}`;
+
+              if (item.reference) {
+                checklist += `\n  - 📖 Admin Guide: ${item.reference}`;
+              }
+              if (item.link) {
+                checklist += `\n  - 🔗 Developer Docs: ${item.link}`;
+              }
+
+              checklist += `\n`;
+            });
+
+            checklist += `\n`;
+          }
+        });
       }
-    });
+    } catch (error) {
+      console.error('Error filtering sections:', error);
+      checklist += `*Error loading implementation guide. Please contact support.*\n\n`;
+    }
 
     // Add footer
     checklist += `---\n\n`;

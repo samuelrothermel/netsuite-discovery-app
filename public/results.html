@@ -4,124 +4,576 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Integration Summary - NetSuite-Braintree</title>
-  <link rel="stylesheet" href="style.css">
   <style>
-    .results-container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
     
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f5f7fa;
+      color: #2d3748;
+      line-height: 1.6;
+    }
+    
+    /* Header Section - Full Width */
     .results-header {
-      border-bottom: 3px solid #32b8c6;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
+      background: linear-gradient(135deg, #003087 0%, #0047ab 100%);
+      color: white;
+      padding: 24px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .results-header-content {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 40px;
     }
     
     .results-header h1 {
-      color: #003087;
-      margin: 0 0 10px 0;
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      font-weight: 600;
+      color: white;
     }
     
     .results-header .meta {
-      color: #666;
-      font-size: 0.95em;
+      font-size: 14px;
+      opacity: 0.95;
+    }
+    
+    .results-header .meta span {
+      display: inline-block;
+      margin-right: 20px;
+    }
+    
+    /* Action Buttons - Full Width Bar */
+    .action-buttons {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 16px 0;
+      position: sticky;
+      top: 76px;
+      z-index: 999;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .action-buttons-content {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    /* Main Content Area - Full Width */
+    .results-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 40px;
+      background: white;
+      min-height: calc(100vh - 200px);
     }
     
     .results-content {
-      line-height: 1.8;
+      line-height: 1.6;
     }
     
-    .results-content h2 {
+    /* Guide Content Styling */
+    .guide-container {
+      max-width: 100%;
+    }
+    
+    .guide-container h1 {
       color: #003087;
-      border-bottom: 2px solid #32b8c6;
+      font-size: 32px;
+      font-weight: 700;
+      margin: 0 0 24px 0;
+      padding-bottom: 16px;
+      border-bottom: 3px solid #32b8c6;
+    }
+    
+    .guide-container h2 {
+      color: #003087;
+      font-size: 24px;
+      font-weight: 600;
+      margin-top: 48px;
+      margin-bottom: 16px;
       padding-bottom: 10px;
-      margin-top: 40px;
-      margin-bottom: 20px;
+      border-bottom: 2px solid #e2e8f0;
+      scroll-margin-top: 140px;
     }
     
-    .results-content h3 {
+    .guide-container h2:first-of-type {
+      margin-top: 24px;
+    }
+    
+    .guide-container h3 {
       color: #32b8c6;
-      margin-top: 30px;
-      margin-bottom: 15px;
+      font-size: 20px;
+      font-weight: 600;
+      margin-top: 28px;
+      margin-bottom: 12px;
     }
     
-    .results-content ul {
+    .guide-container h4 {
+      color: #2d3748;
+      font-size: 17px;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    
+    .guide-container p {
+      margin: 12px 0;
+      line-height: 1.7;
+      color: #4a5568;
+    }
+    
+    /* Code Styling */
+    .guide-container code {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 0.88em;
+      color: #e53e3e;
+    }
+    
+    .guide-container pre {
+      background: #2d3748;
+      color: #e2e8f0;
+      padding: 20px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 20px 0;
+      border-left: 4px solid #32b8c6;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .guide-container pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #e2e8f0;
+    }
+    
+    /* Lists */
+    .guide-container ul, .guide-container ol {
+      margin: 16px 0;
+      padding-left: 32px;
+      color: #4a5568;
+    }
+    
+    .guide-container li {
+      margin: 6px 0;
+      line-height: 1.6;
+    }
+    
+    /* Table of Contents */
+    .guide-container ol.toc {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 24px 32px 24px 48px;
+      margin: 20px 0;
+      list-style: decimal;
+    }
+    
+    .guide-container ol.toc li {
       margin: 10px 0;
-      padding-left: 25px;
+      padding: 4px 0;
     }
     
-    .results-content li {
-      margin: 8px 0;
-    }
-    
-    .results-content strong {
+    .guide-container ol.toc li a {
       color: #003087;
-    }
-    
-    .results-content a {
-      color: #32b8c6;
+      font-weight: 500;
+      font-size: 15px;
+      transition: all 0.2s;
       text-decoration: none;
     }
     
-    .results-content a:hover {
-      text-decoration: underline;
+    .guide-container ol.toc li a:hover {
+      color: #32b8c6;
+      text-decoration: none;
+      padding-left: 4px;
     }
     
-    .action-buttons {
-      position: sticky;
-      top: 20px;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      z-index: 100;
-    }
-    
-    .highlight-box {
-      background: #f0f9fa;
+    /* Configuration Summary */
+    .guide-container .config-summary {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
       border-left: 4px solid #32b8c6;
-      padding: 15px;
-      margin: 15px 0;
+      padding: 24px 28px;
+      margin: 24px 0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     
-    @media print {
-      .action-buttons {
-        display: none;
-      }
+    .guide-container .config-summary h2 {
+      margin-top: 0;
+      border-bottom: none;
+      padding-bottom: 8px;
+    }
+    
+    .guide-container .config-summary p {
+      margin: 8px 0;
+      font-size: 15px;
+    }
+    
+    /* Section Tags */
+    .guide-container .section-tags {
+      background: #e6fffa;
+      border: 1px solid #81e6d9;
+      border-radius: 6px;
+      padding: 10px 16px;
+      margin: 16px 0;
+      font-size: 13px;
+      color: #234e52;
+      font-style: italic;
+    }
+    
+    /* Next Steps Section */
+    .guide-container .next-steps {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 24px 28px;
+      margin: 24px 0;
+      border-radius: 8px;
+    }
+    
+    .guide-container .next-steps h2 {
+      margin-top: 0;
+      border-bottom: none;
+      color: #92400e;
+    }
+    
+    .guide-container .next-steps ol {
+      margin: 20px 0;
+      counter-reset: step-counter;
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    .guide-container .next-steps ol li {
+      counter-increment: step-counter;
+      margin: 14px 0;
+      padding-left: 48px;
+      position: relative;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+    
+    .guide-container .next-steps ol li::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: linear-gradient(135deg, #32b8c6 0%, #0891b2 100%);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Key Resources */
+    .guide-container .key-resources {
+      margin-top: 24px;
+    }
+    
+    .guide-container .key-resources h3 {
+      color: #92400e;
+    }
+    
+    .guide-container .key-resources ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 16px 0;
+    }
+    
+    .guide-container .key-resources ul li {
+      padding-left: 32px;
+      position: relative;
+      margin: 12px 0;
+      font-size: 15px;
+    }
+    
+    .guide-container .key-resources ul li::before {
+      content: "🔗";
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 18px;
+    }
+    
+    /* Links */
+    .guide-container a {
+      color: #0891b2;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid transparent;
+    }
+    
+    .guide-container a:hover {
+      color: #32b8c6;
+      border-bottom: 1px solid #32b8c6;
+    }
+    
+    /* Anchor links for sections */
+    .guide-container a[id^="section-"] {
+      display: block;
+      position: relative;
+      top: -140px;
+      visibility: hidden;
+    }
+    
+    /* Horizontal Rules */
+    .guide-container hr {
+      border: none;
+      border-top: 2px solid #e2e8f0;
+      margin: 40px 0;
+    }
+    
+    /* Tables */
+    .guide-container table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 24px 0;
+      font-size: 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .guide-container table th,
+    .guide-container table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+    
+    .guide-container table th {
+      background: linear-gradient(135deg, #003087 0%, #0047ab 100%);
+      font-weight: 600;
+      color: white;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+    
+    .guide-container table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .guide-container table tr:nth-child(even) {
+      background: #f7fafc;
+    }
+    
+    .guide-container table tr:hover {
+      background: #edf2f7;
+    }
+    
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #32b8c6 0%, #0891b2 100%);
+      color: white;
+      box-shadow: 0 2px 4px rgba(50,184,198,0.2);
+    }
+    
+    .btn-primary:hover {
+      box-shadow: 0 4px 12px rgba(50,184,198,0.4);
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: #4a5568;
+      border: 1px solid #cbd5e0;
+    }
+    
+    .btn-secondary:hover {
+      background: #f7fafc;
+      border-color: #a0aec0;
+      transform: translateY(-1px);
+    }
+    
+    /* Strong text */
+    .results-content strong,
+    .guide-container strong {
+      color: #003087;
+      font-weight: 600;
+    }
+    
+    /* Highlight Box */
+    .highlight-box {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 20px 24px;
+      margin: 24px 0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    /* Loading Spinner */
+    .loading-container {
+      text-align: center;
+      padding: 80px 20px;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      border: 4px solid #e2e8f0;
+      border-top: 4px solid #32b8c6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 24px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .results-header-content,
+      .action-buttons-content,
       .results-container {
-        box-shadow: none;
+        padding-left: 30px;
+        padding-right: 30px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .results-header-content,
+      .action-buttons-content,
+      .results-container {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+      
+      .results-header h1 {
+        font-size: 22px;
+      }
+      
+      .results-header .meta span {
+        display: block;
+        margin: 4px 0;
+      }
+      
+      .guide-container h1 {
+        font-size: 26px;
+      }
+      
+      .guide-container h2 {
+        font-size: 20px;
+        margin-top: 32px;
+      }
+      
+      .guide-container table {
+        font-size: 13px;
+      }
+      
+      .guide-container table th,
+      .guide-container table td {
+        padding: 10px 12px;
+      }
+      
+      .action-buttons-content {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+    
+    /* Print Styles */
+    @media print {
+      body {
+        background: white;
+      }
+      
+      .results-header,
+      .action-buttons,
+      #actions {
+        display: none !important;
+      }
+      
+      .results-container {
+        padding: 0;
+        max-width: 100%;
+      }
+      
+      .guide-container h2 {
+        page-break-after: avoid;
+      }
+      
+      .guide-container table,
+      .guide-container .config-summary,
+      .guide-container .next-steps {
+        page-break-inside: avoid;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="action-buttons">
-      <button onclick="window.print()" class="btn btn-primary">🖨️ Print</button>
-      <button onclick="window.history.back()" class="btn btn-secondary">← Back to Form</button>
-      <button onclick="window.location.href='/'" class="btn btn-secondary">🏠 Start Over</button>
+  <!-- Header Section -->
+  <header class="results-header">
+    <div class="results-header-content">
+      <h1 id="pageTitle">Braintree-NetSuite Implementation Guide</h1>
+      <div class="meta" id="pageMeta">Generating your personalized guide...</div>
     </div>
-    
-    <div class="results-container">
-      <div class="results-header">
-        <h1 id="pageTitle">NetSuite-Braintree Integration Summary</h1>
-        <div class="meta" id="pageMeta"></div>
-      </div>
-      
-      <div class="results-content" id="checklistContent">
-        <p>Loading implementation summary...</p>
-      </div>
-    </div>
+  </header>
+  
+  <!-- Action Buttons Bar -->
+  <div id="actions" class="action-buttons">
+    <!-- Action buttons will be added here -->
   </div>
+  
+  <!-- Main Content -->
+  <main class="results-container">
+    <div class="results-content" id="checklistContent">
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p style="color: #718096; font-size: 15px;">
+          <strong>Generating your personalized implementation guide...</strong>
+        </p>
+      </div>
+    </div>
+  </main>
 
-  <script src="results.js"></script>
+  <script src="results-new.js"></script>
 </body>
 </html>

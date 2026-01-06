@@ -66,6 +66,29 @@ function setupConditionalFields() {
   } else if (migrationGroup) {
     migrationGroup.style.display = 'none';
   }
+
+  // External eCommerce Group
+  const externalEcommerceChannel = document.getElementById(
+    'externalEcommerceChannel'
+  );
+  const externalEcommerceGroup = document.getElementById(
+    'externalEcommerceGroup'
+  );
+  if (externalEcommerceChannel && externalEcommerceChannel.checked) {
+    externalEcommerceGroup.style.display = 'block';
+  } else if (externalEcommerceGroup) {
+    externalEcommerceGroup.style.display = 'none';
+  }
+
+  // Order Sync Details Group (sub-conditional)
+  const orderSyncDetailsGroup = document.getElementById(
+    'orderSyncDetailsGroup'
+  );
+  if (formData.needsOrderSync === 'yes') {
+    orderSyncDetailsGroup.style.display = 'block';
+  } else if (orderSyncDetailsGroup) {
+    orderSyncDetailsGroup.style.display = 'none';
+  }
 }
 
 // Get Form Data
@@ -99,6 +122,9 @@ function getFormData() {
     achRealtimeStatus: formData.get('achRealtimeStatus') === 'on',
     paymentMethods: formData.getAll('paymentMethods'),
     processingChannels: formData.getAll('processingChannels'),
+    ecommercePlatform: formData.get('ecommercePlatform'),
+    needsOrderSync: formData.get('needsOrderSync'),
+    syncOrderData: formData.getAll('syncOrderData'),
     fraudRate: formData.get('fraudRate'),
     fraudProtectionAdvanced: formData.get('fraudProtectionAdvanced'),
     needs3ds: formData.get('needs3ds'),

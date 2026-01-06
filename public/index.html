@@ -261,10 +261,55 @@
           <div class="form-group">
             <label>Where Will You Process Payments? *</label>
             <div class="checkbox-group">
-              <label><input type="checkbox" name="processingChannels" value="ecommerce" required> eCommerce/SuiteCommerce Advanced</label>
+              <label><input type="checkbox" name="processingChannels" value="suitecommerce" id="suitecommerceChannel"> SuiteCommerce Advanced (NetSuite Native)</label>
+              <label><input type="checkbox" name="processingChannels" value="external-ecommerce" id="externalEcommerceChannel"> External eCommerce Platform</label>
               <label><input type="checkbox" name="processingChannels" value="moto"> NetSuite Back Office MOTO</label>
               <label><input type="checkbox" name="processingChannels" value="payment-link"> Payment Link (email invoices)</label>
               <label><input type="checkbox" name="processingChannels" value="prl"> Braintree Payment Request Link</label>
+            </div>
+          </div>
+
+          <!-- Conditional: External eCommerce Platform Details -->
+          <div id="externalEcommerceGroup" style="display: none;">
+            <div class="form-group">
+              <label for="ecommercePlatform">Which External eCommerce Platform? *</label>
+              <select id="ecommercePlatform" name="ecommercePlatform">
+                <option value="">Select platform...</option>
+                <option value="shopify">Shopify</option>
+                <option value="magento">Magento / Adobe Commerce</option>
+                <option value="bigcommerce">BigCommerce</option>
+                <option value="woocommerce">WooCommerce</option>
+                <option value="salesforce-commerce">Salesforce Commerce Cloud</option>
+                <option value="custom">Custom Platform</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Do you need to sync orders from external platform to NetSuite?</label>
+              <div class="radio-group">
+                <label>
+                  <input type="radio" name="needsOrderSync" value="yes">
+                  Yes - sync orders to NetSuite
+                </label>
+                <label>
+                  <input type="radio" name="needsOrderSync" value="no">
+                  No - orders stay in external platform
+                </label>
+              </div>
+              <small>If yes, you'll need Record External Event and 3rd party API connector configuration</small>
+            </div>
+
+            <div id="orderSyncDetailsGroup" style="display: none;">
+              <div class="form-group">
+                <label>What order information needs to sync?</label>
+                <div class="checkbox-group">
+                  <label><input type="checkbox" name="syncOrderData" value="transactions"> Payment transactions</label>
+                  <label><input type="checkbox" name="syncOrderData" value="customer-info"> Customer information</label>
+                  <label><input type="checkbox" name="syncOrderData" value="inventory"> Inventory/SKU data</label>
+                  <label><input type="checkbox" name="syncOrderData" value="order-status"> Order status updates</label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
