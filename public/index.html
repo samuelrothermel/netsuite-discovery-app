@@ -152,7 +152,7 @@
           <div class="form-group">
             <label>
               <input type="checkbox" id="partialCapture" name="partialCapture">
-              Need Partial Capture? (Capture LESS than authorized)
+              Need Multiple Partial Capture? (Capture a single Authorization in multiple transactions)
             </label>
             <small>Split shipments, drop-shipping. Requires Braintree approval.</small>
           </div>
@@ -162,15 +162,14 @@
               <input type="checkbox" id="overCapture" name="overCapture">
               Need Over-Capture? (Capture MORE than authorized)
             </label>
-            <small>Added shipping, taxes, fees. Requires Braintree approval.</small>
+            <small><strong>Limited availability:</strong> Only certain MCCs qualify, and ONLY Visa/MasterCard support over-capture. Added shipping, taxes, fees. <strong>Important:</strong> Merchants needing over-capture should vault/tokenize payment methods at authorization time.</small>
           </div>
 
           <div class="form-group">
             <label>
               <input type="checkbox" id="neitherCapture" name="neitherCapture">
-              Not Applicable (Capture exact amount or re-authorize vaulted payment methods)
+              Not Applicable (Capture exact amount or Authorize more than expected Capture amount)
             </label>
-            <small>Standard workflow: capture the exact authorized amount, or create new authorization against vaulted payment method if needed.</small>
           </div>
         </div>
 
@@ -261,12 +260,13 @@
           <div class="form-group">
             <label>Where Will You Process Payments? *</label>
             <div class="checkbox-group">
-              <label><input type="checkbox" name="processingChannels" value="suitecommerce" id="suitecommerceChannel"> SuiteCommerce Advanced (NetSuite Native)</label>
+              <label><input type="checkbox" name="processingChannels" value="suitecommerce" id="suitecommerceChannel"> SuiteCommerce (NetSuite Native)</label>
               <label><input type="checkbox" name="processingChannels" value="external-ecommerce" id="externalEcommerceChannel"> External eCommerce Platform</label>
               <label><input type="checkbox" name="processingChannels" value="moto"> NetSuite Back Office MOTO</label>
-              <label><input type="checkbox" name="processingChannels" value="payment-link"> Payment Link (email invoices)</label>
-              <label><input type="checkbox" name="processingChannels" value="prl"> Braintree Payment Request Link</label>
+              <label><input type="checkbox" name="processingChannels" value="payment-link"> Payment Link (customers pay invoices via email)</label>
+              <label><input type="checkbox" name="processingChannels" value="prl"> Braintree Payment Request Link (merchants send payment links for sales orders)</label>
             </div>
+            <small><strong>Payment Link vs Payment Request Link:</strong> Payment Link is for invoices sent by NetSuite's native system. Payment Request Link is Braintree's feature for generating shareable links from sales orders with more payment method flexibility.</small>
           </div>
 
           <!-- Conditional: External eCommerce Platform Details -->
@@ -320,25 +320,19 @@
           <p class="info-link">📚 <a href="https://developer.paypal.com/braintree/articles/guides/fraud-tools/overview" target="_blank">Learn more about Fraud Tools</a> | <a href="https://developer.paypal.com/braintree/docs/guides/3d-secure" target="_blank">3D Secure</a></p>
           
           <div class="form-group">
-            <label for="fraudRate">Typical Chargeback/Fraud Rate (optional)</label>
-            <input type="text" id="fraudRate" name="fraudRate" placeholder="e.g., 0.2%, Unknown">
-            <small>If >0.5%, Fraud Protection Advanced is recommended</small>
-          </div>
-
-          <div class="form-group">
-            <label>Fraud Protection Advanced? *</label>
+            <label>Fraud Protection Required? *</label>
             <div class="radio-group">
               <label>
-                <input type="radio" name="fraudProtectionAdvanced" value="yes" required>
-                Yes - higher risk or high volume
+                <input type="radio" name="fraudProtectionAdvanced" value="no" required>
+                AVS / CVV
               </label>
               <label>
-                <input type="radio" name="fraudProtectionAdvanced" value="no">
-                No - basic AVS/CVV sufficient
+                <input type="radio" name="fraudProtectionAdvanced" value="premium">
+                Fraud Protection Premium
               </label>
               <label>
-                <input type="radio" name="fraudProtectionAdvanced" value="unsure">
-                Not sure
+                <input type="radio" name="fraudProtectionAdvanced" value="yes">
+                Fraud Protection Advanced (Paid)
               </label>
             </div>
           </div>

@@ -96,15 +96,6 @@ class GuideGenerator {
     guide += `## Your Configuration\n\n`;
     guide += this.buildConfigurationSummary(formData);
 
-    // Table of Contents
-    guide += `\n---\n\n`;
-    guide += `## Table of Contents\n\n`;
-    guide += `This guide includes ${sections.length} sections:\n\n`;
-
-    sections.forEach((section, index) => {
-      guide += `${index + 1}. [${section.title}](#section-${section.id})\n`;
-    });
-
     // Implementation Sections
     guide += `\n---\n\n`;
     guide += `## Implementation Guide\n\n`;
@@ -151,61 +142,156 @@ class GuideGenerator {
   buildConfigurationSummary(formData) {
     let summary = '';
 
+    summary += `Below is a detailed breakdown of your selected features and the required configuration steps for each.\n\n`;
+
     // Processing Timeline
     if (formData.processingTimeline === 'same-day') {
-      summary += `✓ **Same-Day Capture** - Transactions authorized and captured immediately\n`;
+      summary += `### ✓ Same-Day Capture\n\n`;
+      summary += `**Description:** Transactions authorized and captured immediately on the same business day.\n\n`;
+      summary += `**Required Configuration:**\n`;
+      summary += `- **NetSuite:** Set Payment Operation to "Sale" on transactions (Cash Sale, Customer Payment)\n`;
+      summary += `- **Braintree Control Panel:** No additional configuration required\n\n`;
     } else if (formData.processingTimeline === 'multi-day') {
-      summary += `✓ **Multi-Day Capture** - Authorization and capture on different days\n`;
+      summary += `### ✓ Multi-Day Capture\n\n`;
+      summary += `**Description:** Authorization on Day 1, capture on Day 3-7 (typical for MOTO, B2B).\n\n`;
+      summary += `**Required Configuration:**\n`;
+      summary += `- **NetSuite:** Set Payment Operation to "Authorization" on Sales Order, then "Capture Authorization" when fulfilling\n`;
+      summary += `- **Braintree Control Panel:** No additional configuration required\n`;
+      summary += `- **Important:** Authorizations typically expire after 7 days\n\n`;
+
       if (formData.needsReauth === true || formData.needsReauth === 'yes') {
-        summary += `✓ **Reauthorization** - Handle expired authorizations\n`;
+        summary += `### ✓ Reauthorization\n\n`;
+        summary += `**Description:** Renew expired authorizations when auth-to-capture gap exceeds 7 days.\n\n`;
+        summary += `**Required Configuration:**\n`;
+        summary += `- **NetSuite:** Create Braintree Config Extension record with Payment Processing Profile Internal ID\n`;
+        summary += `- **NetSuite:** Configure "Display ReAuth Button Preference" and days threshold\n`;
+        summary += `- **NetSuite:** Deploy "[BT] Braintree Mark Expired in Auth Info" scheduled script\n`;
+        summary += `- **Braintree Control Panel:** No additional configuration required\n`;
+        summary += `- **Prerequisite:** Tokenization must be enabled to reauthorize payment methods\n\n`;
       }
     }
 
     // Special Capture Features
     if (formData.partialCapture === true || formData.partialCapture === 'yes') {
-      summary += `✓ **Partial Capture** - Multiple captures on single authorization\n`;
+      summary += `### ✓ Partial Capture\n\n`;
+      summary += `**Description:** Capture less than the full authorized amount across multiple captures (split shipments, drop-shipping).\n\n`;
+      summary += `**Required Configuration:**\n`;
+      summary += `- **Braintree Control Panel:** Contact PayPal to enable partial capture for your merchant account (approval required)\n`;
+      summary += `- **NetSuite:** Check "Enable Partial Capture" on Payment Processing Profile\n`;
+      summary += `- **NetSuite:** Use Item Fulfillment → Bill → Capture Authorization workflow\n\n`;
     }
+
     if (formData.overCapture === true || formData.overCapture === 'yes') {
-      summary += `✓ **Over-Capture** - Capture up to 115% of authorized amount\n`;
+      summary += `### ✓ Over-Capture\n\n`;
+      summary += `**Description:** Capture MORE than the original authorization amount (up to 115% for qualified merchants).\n\n`;
+      summary += `**Required Configuration:**\n`;
+      summary += `- **Braintree Control Panel:** Contact PayPal to verify MCC eligibility and enable over-capture (approval required)\n`;
+      summary += `- **NetSuite:** Check "Enable Overcapture" on Payment Processing Profile\n`;
+      summary += `- **NetSuite:** Enable tokenization/vaulting (CRITICAL - required for over-capture)\n`;
+      summary += `- **Important:** Only Visa/MasterCard support over-capture; limited MCCs qualify\n\n`;
     }
 
     // L2/L3 Processing
     if (formData.l2l3Processing === 'yes') {
-      summary += `✓ **Level 2/3 Data Processing** - Reduced interchange rates for B2B\n`;
+      summary += `### ✓ Level 2/3 Data Processing\n\n`;
+      summary += `**Description:** Enhanced transaction data for B2B transactions to reduce interchange rates.\n\n`;
+      summary += `**Required Configuration:**\n`;
+      summary += `- **NetSuite:** Check "Support Line Level Data" on Payment Processing Profile\n`;
+      summary += `- **NetSuite:** Check "Requires Line-Level Data" on each payment method\n`;
+      summary += `- **NetSuite:** Ensure transaction records include: PO#, line items, tax, shipping amounts\n`;
+      summary += `- **Braintree Control Panel:** No additional configuration required\n\n`;
     }
 
     // ACH
     if (formData.acceptACH === 'yes') {
+      summary += `### ✓ ACH Processing\n\n`;
+      summary += `**Description:** Direct bank-to-bank transfers (settles in 1-2 business days).\n\n`;
+      summary += `**Required Configuration:**\n`;
+      summary += `- **Braintree Control Panel:** Contact PayPal to enable ACH processing (approval required)\n`;
+      summary += `- **NetSuite:** Create ACH payment method (Type: "ACH")\n`;
+      summary += `- **NetSuite:** Add ACH method to Payment Processing Profile\n`;
+
       const achFeatures = [];
-      if (formData.achNetworkCheck) achFeatures.push('Network Check');
-      if (formData.achRecurring) achFeatures.push('Recurring Payments');
-      if (formData.achRealtimeStatus) achFeatures.push('Real-time Status');
-      summary += `✓ **ACH Processing** - Bank transfers`;
-      if (achFeatures.length > 0) {
-        summary += ` (${achFeatures.join(', ')})`;
+      if (formData.achNetworkCheck) {
+        achFeatures.push('Network Check');
+        summary += `- **Braintree Control Panel:** Enable Network Check for account verification\n`;
+      }
+      if (formData.achRecurring) {
+        achFeatures.push('Recurring');
+        summary += `- **NetSuite:** Configure recurring billing schedules for subscription payments\n`;
+      }
+      if (formData.achRealtimeStatus) {
+        achFeatures.push('Real-time Status');
+        summary += `- **NetSuite:** Check "Enable Real time ACH status" on Payment Processing Profile\n`;
+        summary += `- **NetSuite:** Configure webhooks for settlement notifications\n`;
       }
       summary += `\n`;
     }
 
     // Payment Methods
     if (formData.paymentMethods && formData.paymentMethods.length > 0) {
-      const methods = ['Credit/Debit Cards'];
-      if (formData.paymentMethods.includes('paypal')) methods.push('PayPal');
-      if (formData.paymentMethods.includes('bnpl'))
-        methods.push('Buy Now Pay Later');
-      if (formData.paymentMethods.includes('apple-pay'))
-        methods.push('Apple Pay');
-      if (formData.paymentMethods.includes('google-pay'))
-        methods.push('Google Pay');
-      if (formData.paymentMethods.includes('venmo')) methods.push('Venmo');
-      summary += `✓ **Payment Methods:** ${methods.join(', ')}\n`;
+      summary += `### ✓ Payment Methods\n\n`;
+
+      // Credit/Debit Cards (always included)
+      summary += `**Credit/Debit Cards** (Visa, MasterCard, Amex, Discover)\n`;
+      summary += `- **NetSuite:** Create payment methods for each card brand (Type: "Payment Card")\n`;
+      summary += `- **NetSuite:** Set Card Brands field for each method (required for Payment Link/SCA)\n`;
+      summary += `- **Braintree Control Panel:** Credit card processing enabled by default\n\n`;
+
+      if (formData.paymentMethods.includes('paypal')) {
+        summary += `**PayPal**\n`;
+        summary += `- **Braintree Control Panel:** Link PayPal account to Braintree (Account > PayPal)\n`;
+        summary += `- **NetSuite:** Create External Checkout payment method for PayPal\n`;
+        summary += `- **NetSuite:** Create Tokenization Key in Braintree Control Panel (API > Keys > Tokenization Keys)\n`;
+        summary += `- **NetSuite:** Enter Tokenization Key in Payment Processing Profile\n\n`;
+      }
+
+      if (formData.paymentMethods.includes('bnpl')) {
+        summary += `**PayPal Buy Now Pay Later**\n`;
+        summary += `- **Braintree Control Panel:** Ensure BNPL enabled (limited countries)\n`;
+        summary += `- **NetSuite:** Configure via Digital Wallet section in Payment Processing Profile\n`;
+        summary += `- **NetSuite:** Check "Buy Now Pay Later" in Allowed Alternate Payments\n\n`;
+      }
+
+      if (formData.paymentMethods.includes('apple-pay')) {
+        summary += `**Apple Pay**\n`;
+        summary += `- **Braintree Control Panel:** Enable Apple Pay (Account Settings > Payment Methods)\n`;
+        summary += `- **Apple Developer Account:** Create Merchant ID and certificates (requires Mac OS)\n`;
+        summary += `- **NetSuite:** Upload domain association file to Website Hosting Files\n`;
+        summary += `- **NetSuite:** Configure Digital Wallet section in Payment Processing Profile\n`;
+        summary += `- **NetSuite:** Check "Apple Pay" in Allowed Alternate Payments\n\n`;
+      }
+
+      if (formData.paymentMethods.includes('google-pay')) {
+        summary += `**Google Pay**\n`;
+        summary += `- **Braintree Control Panel:** Enable Google Pay (Account Settings > Payment Methods)\n`;
+        summary += `- **Google Merchant Center:** Obtain Google Merchant ID\n`;
+        summary += `- **NetSuite:** Enter Google Merchant ID in Payment Processing Profile\n`;
+        summary += `- **NetSuite:** Check "Google Pay" in Allowed Alternate Payments\n\n`;
+      }
+
+      if (formData.paymentMethods.includes('venmo')) {
+        summary += `**Venmo** (US only)\n`;
+        summary += `- **Braintree Control Panel:** Contact PayPal to enable Venmo\n`;
+        summary += `- **Braintree Control Panel:** Create Business Profile (Account Settings > Payment Methods > Venmo)\n`;
+        summary += `- **NetSuite:** Create External Checkout payment method for Venmo\n`;
+        summary += `- **NetSuite:** Check "Venmo" in Allowed Alternate Payments\n\n`;
+      }
     }
 
     // Processing Channels
     if (formData.processingChannels && formData.processingChannels.length > 0) {
-      const channels = [];
-      if (formData.processingChannels.includes('suitecommerce'))
-        channels.push('SuiteCommerce Advanced');
+      summary += `### ✓ Processing Channels\n\n`;
+
+      if (formData.processingChannels.includes('suitecommerce')) {
+        summary += `**SuiteCommerce**\n`;
+        summary += `- **NetSuite:** Install SuiteCommerce bundle (Bundle ID: 520497)\n`;
+        summary += `- **NetSuite:** Install Braintree SuiteCommerce Extension (Braintree > Configuration > Commerce Extension)\n`;
+        summary += `- **NetSuite:** Activate extension via Extension Manager for your website/domain\n`;
+        summary += `- **NetSuite:** Create External Checkout payment method for embedded buttons\n`;
+        summary += `- **NetSuite:** Configure payment methods in Commerce > Website > Configuration > Braintree tab\n\n`;
+      }
+
       if (formData.processingChannels.includes('external-ecommerce')) {
         let channel = 'External eCommerce';
         if (
@@ -220,41 +306,86 @@ class GuideGenerator {
             'salesforce-commerce': 'Salesforce Commerce Cloud',
             custom: 'Custom Platform',
           };
-          channel += ` (${
+          channel =
             platformNames[formData.ecommercePlatform] ||
-            formData.ecommercePlatform
-          })`;
+            formData.ecommercePlatform;
         }
-        channels.push(channel);
-      }
-      if (formData.processingChannels.includes('moto'))
-        channels.push('Back Office MOTO');
-      if (formData.processingChannels.includes('payment-link'))
-        channels.push('Payment Link');
-      if (formData.processingChannels.includes('prl'))
-        channels.push('Payment Request Link');
-      summary += `✓ **Processing Channels:** ${channels.join(', ')}\n`;
-    }
 
-    // External eCommerce Integration
-    if (
-      formData.processingChannels?.includes('external-ecommerce') &&
-      formData.needsOrderSync === 'yes'
-    ) {
-      summary += `✓ **Order Synchronization** - Sync orders from external platform to NetSuite\n`;
-      summary += `  → Requires Record External Event and API connector configuration\n`;
+        summary += `**${channel}**\n`;
+        summary += `- **External Platform:** Install and configure Braintree payment gateway on your ${channel} site\n`;
+        summary += `- **External Platform:** Use same Braintree merchant account credentials\n`;
+        summary += `- **NetSuite:** Create External Checkout payment method (name it "${channel}")\n`;
+        summary += `- **NetSuite:** Add external platform payment method to Payment Processing Profile\n`;
+
+        if (formData.needsOrderSync === 'yes') {
+          summary += `- **Integration:** Set up API connector/middleware (Celigo, Jitterbit, custom) to sync orders\n`;
+          summary += `- **Integration:** Map critical fields: PN Ref (transaction ID), auth code, amount, customer info\n`;
+          summary += `- **NetSuite:** Use "Record External Event" handling mode on Sales Orders\n`;
+          summary += `- **NetSuite:** Configure webhooks for real-time transaction updates\n`;
+        }
+        summary += `\n`;
+      }
+
+      if (formData.processingChannels.includes('moto')) {
+        summary += `**Back Office MOTO** (Mail Order / Telephone Order)\n`;
+        summary += `- **NetSuite:** No additional configuration required beyond standard payment methods\n`;
+        summary += `- **NetSuite:** Process transactions manually via Sales Order or Cash Sale forms\n`;
+        summary += `- **Best Practice:** Consider separate Payment Processing Profile for reporting/security\n\n`;
+      }
+
+      if (formData.processingChannels.includes('payment-link')) {
+        summary += `**Payment Link** (NetSuite Invoice Payment)\n`;
+        summary += `- **NetSuite:** Enable Feature (Setup > Company > Enable Features > Transactions > Payment Link)\n`;
+        summary += `- **NetSuite:** Configure Payment Link (Commerce > Payment Link)\n`;
+        summary += `- **NetSuite:** Set domain prefix, payment methods, company logo, email templates\n`;
+        summary += `- **NetSuite:** Add payment link markup to invoice PDF templates (optional)\n`;
+        summary += `- **Braintree Control Panel:** No additional configuration required\n\n`;
+      }
+
+      if (formData.processingChannels.includes('prl')) {
+        summary += `**Braintree Payment Request Link** (Sales Order Payment)\n`;
+        summary += `- **NetSuite:** Create External Checkout payment method named "Braintree Payment Request Link"\n`;
+        summary += `- **NetSuite:** Configure "Braintree Payment Request Link Method" on Payment Processing Profile\n`;
+        summary += `- **NetSuite:** Set expiration days (default: 3 days)\n`;
+        summary += `- **NetSuite:** Optionally disable specific payment types (card, PayPal)\n`;
+        summary += `- **NetSuite:** Add PRL markup to Sales Order PDF templates to display link\n\n`;
+      }
     }
 
     // Fraud Protection
+    summary += `### ✓ Fraud Protection\n\n`;
     if (formData.fraudProtectionAdvanced === 'yes') {
-      summary += `✓ **Advanced Fraud Protection** - Advanced scoring and decision logic\n`;
+      summary += `**Fraud Protection Advanced** (AI-driven risk scoring)\n`;
+      summary += `- **Braintree Control Panel:** Contact PayPal to enable Fraud Protection Advanced (additional fees)\n`;
+      summary += `- **Braintree Control Panel:** Configure risk thresholds and auto-decline rules\n`;
+      summary += `- **NetSuite:** Check "Enable Fraud Protection Advanced" on Payment Processing Profile\n`;
+      summary += `- **NetSuite:** Configure webhooks for "Transaction Reviewed" notifications\n`;
+      summary += `- **NetSuite:** Deploy "[BT] Generate Refund for Fraud Review" scheduled script\n`;
+      summary += `- **Important:** Transactions placed on HOLD pending risk review; fulfillment cannot proceed until approved\n\n`;
+    } else if (formData.fraudProtectionAdvanced === 'premium') {
+      summary += `**Fraud Protection Premium**\n`;
+      summary += `- **Braintree Control Panel:** Configure AVS and CVV rules (Fraud Management section)\n`;
+      summary += `- **Braintree Control Panel:** Set up enhanced fraud filters\n`;
+      summary += `- **NetSuite:** Configure "Skip Basic Fraud" dropdowns on Payment Processing Profile (optional)\n`;
+      summary += `- **NetSuite:** No additional configuration beyond basic setup\n\n`;
     } else {
-      summary += `✓ **Basic Fraud Protection** - AVS and CVV verification\n`;
+      summary += `**Basic Fraud Management** (AVS/CVV only)\n`;
+      summary += `- **Braintree Control Panel:** Configure AVS rules (Fraud Management > AVS Options)\n`;
+      summary += `- **Braintree Control Panel:** Configure CVV rules (Fraud Management > CVV Options)\n`;
+      summary += `- **NetSuite:** Configure "Skip Basic Fraud" dropdowns on Payment Processing Profile (optional)\n`;
+      summary += `- **NetSuite:** No additional configuration required\n\n`;
     }
 
     // 3D Secure
     if (formData.needs3ds === 'yes') {
-      summary += `✓ **3D Secure 2.0** - SCA compliance for regulated regions\n`;
+      summary += `### ✓ 3D Secure 2.0 (SCA Compliance)\n\n`;
+      summary += `**Description:** Strong Customer Authentication required for EU/UK/regulated regions.\n\n`;
+      summary += `**Required Configuration:**\n`;
+      summary += `- **Braintree Control Panel:** Enable 3D Secure 2.0 (Account Settings > Processing)\n`;
+      summary += `- **NetSuite:** Check "Payer Authentication" on Payment Processing Profile\n`;
+      summary += `- **NetSuite:** Ensure "Authentication" is in Gateway Request Types list\n`;
+      summary += `- **NetSuite (if using SCA):** Enable "Enable 3D Secure Payments" in Commerce > Website > Configuration\n`;
+      summary += `- **Important:** Verify billing address configuration to prevent authentication failures\n\n`;
     }
 
     return summary;
