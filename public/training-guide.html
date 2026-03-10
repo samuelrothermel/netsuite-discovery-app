@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetSuite Training Guide - Integration Engineer Hub</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .nav-bar {
+      background: #0070ba;
+      color: white;
+      padding: 15px 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-title {
+      font-size: 1.3em;
+      font-weight: 600;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .guide-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 40px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      color: #0070ba;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 0.95em;
+    }
+
+    .search-box:focus {
+      outline: none;
+      border-color: #0070ba;
+    }
+
+    #toc {
+      list-style: none;
+      padding: 0;
+    }
+
+    #toc li {
+      margin-bottom: 8px;
+    }
+
+    #toc a {
+      color: #333;
+      text-decoration: none;
+      display: block;
+      padding: 6px 10px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    #toc a:hover {
+      background: #f0f0f0;
+    }
+
+    #toc a.active {
+      background: #e8f4fd;
+      color: #0070ba;
+      font-weight: 600;
+    }
+
+    .content-area {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      min-height: 600px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+
+    .loading-spinner {
+      font-size: 2em;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .markdown-content h1 {
+      color: #0070ba;
+      border-bottom: 3px solid #0070ba;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+
+    .markdown-content h2 {
+      color: #005a96;
+      margin-top: 40px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 8px;
+    }
+
+    .markdown-content h3 {
+      color: #333;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+
+    .markdown-content code {
+      background: #f6f8fa;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .markdown-content pre {
+      background: #f6f8fa;
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border-left: 4px solid #0070ba;
+    }
+
+    .markdown-content pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .markdown-content blockquote {
+      border-left: 4px solid #0070ba;
+      padding-left: 20px;
+      margin-left: 0;
+      color: #666;
+      font-style: italic;
+    }
+
+    .markdown-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    .markdown-content th,
+    .markdown-content td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    .markdown-content th {
+      background: #f6f8fa;
+      font-weight: 600;
+    }
+
+    .markdown-content ul,
+    .markdown-content ol {
+      line-height: 1.8;
+    }
+
+    .markdown-content a {
+      color: #0070ba;
+      text-decoration: none;
+    }
+
+    .markdown-content a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 968px) {
+      .guide-container {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav-bar">
+    <div class="nav-content">
+      <div class="nav-title">📚 NetSuite Training Guide</div>
+      <a href="/" class="nav-link">← Back to Hub</a>
+    </div>
+  </nav>
+
+  <div class="guide-container">
+    <aside class="sidebar">
+      <h3>Contents</h3>
+      <input type="text" id="searchBox" class="search-box" placeholder="Search...">
+      <ul id="toc">
+        <!-- Table of contents will be populated by JavaScript -->
+      </ul>
+    </aside>
+
+    <main class="content-area">
+      <div class="loading" id="loading">
+        <div class="loading-spinner">⏳</div>
+        <p>Loading training guide...</p>
+      </div>
+      <div id="content" class="markdown-content" style="display: none;">
+        <!-- Markdown content will be rendered here -->
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let allContent = '';
+    let allHeadings = [];
+
+    // Fetch and render the training guide
+    async function loadTrainingGuide() {
+      try {
+        const response = await fetch('/api/training-guide');
+        const data = await response.json();
+
+        if (data.success) {
+          allContent = data.content;
+          document.getElementById('content').innerHTML = data.html;
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('content').style.display = 'block';
+          
+          // Generate table of contents
+          generateTOC();
+          
+          // Setup scroll spy
+          setupScrollSpy();
+        } else {
+          showError(data.message || 'Failed to load training guide');
+        }
+      } catch (error) {
+        console.error('Error loading training guide:', error);
+        showError('Failed to load training guide. Please try again.');
+      }
+    }
+
+    function generateTOC() {
+      const content = document.getElementById('content');
+      const headings = content.querySelectorAll('h1, h2, h3');
+      const tocList = document.getElementById('toc');
+      allHeadings = Array.from(headings);
+
+      headings.forEach((heading, index) => {
+        const id = `heading-${index}`;
+        heading.id = id;
+
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `#${id}`;
+        a.textContent = heading.textContent;
+        a.style.paddingLeft = `${(parseInt(heading.tagName[1]) - 1) * 15}px`;
+        
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+    }
+
+    function setupScrollSpy() {
+      const options = {
+        rootMargin: '-100px 0px -66%',
+        threshold: 0
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const id = entry.target.id;
+          const link = document.querySelector(`#toc a[href="#${id}"]`);
+          
+          if (entry.isIntersecting) {
+            document.querySelectorAll('#toc a').forEach(a => a.classList.remove('active'));
+            if (link) link.classList.add('active');
+          }
+        });
+      }, options);
+
+      allHeadings.forEach(heading => observer.observe(heading));
+    }
+
+    // Search functionality
+    document.getElementById('searchBox').addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const tocLinks = document.querySelectorAll('#toc li');
+
+      tocLinks.forEach(li => {
+        const text = li.textContent.toLowerCase();
+        li.style.display = text.includes(searchTerm) ? 'block' : 'none';
+      });
+    });
+
+    function showError(message) {
+      document.getElementById('loading').innerHTML = `
+        <div style="color: #d9534f;">
+          <p style="font-size: 2em;">⚠️</p>
+          <p>${message}</p>
+          <p style="margin-top: 20px;">
+            <a href="/" style="color: #0070ba;">Return to Hub</a>
+          </p>
+        </div>
+      `;
+    }
+
+    // Load guide on page load
+    loadTrainingGuide();
+  </script>
+</body>
+</html>

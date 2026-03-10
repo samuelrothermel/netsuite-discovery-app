@@ -33,6 +33,28 @@
       max-width: 1600px;
       margin: 0 auto;
       padding: 0 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .results-header-text {
+      flex: 1;
+    }
+    
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      transition: background 0.2s;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.1);
+      white-space: nowrap;
+    }
+    
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
     
     .results-header h1 {
@@ -552,8 +574,11 @@
   <!-- Header Section -->
   <header class="results-header">
     <div class="results-header-content">
-      <h1 id="pageTitle">Braintree-NetSuite Implementation Guide</h1>
-      <div class="meta" id="pageMeta">Generating your personalized guide...</div>
+      <div class="results-header-text">
+        <h1 id="pageTitle">Braintree-NetSuite Implementation Guide</h1>
+        <div class="meta" id="pageMeta">Generating your personalized guide...</div>
+      </div>
+      <a href="/" class="nav-link">← Back to Hub</a>
     </div>
   </header>
   

@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const guideGenerator = require('./services/guideGenerator');
+const markdownRenderService = require('./services/markdownRenderService');
 
 const app = express();
 
@@ -15,9 +16,35 @@ app.use(express.static('public'));
 
 // Routes
 
-// GET: Serve discovery form
+// GET: Serve hub homepage
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
+});
+
+// GET: Serve discovery form
+app.get('/discovery', (req, res) => {
+  res.sendFile(__dirname + '/public/discovery.html');
+});
+
+// GET: Serve training guide viewer
+app.get('/training-guide', (req, res) => {
+  res.sendFile(__dirname + '/public/training-guide.html');
+});
+
+// API: Get training guide content
+app.get('/api/training-guide', async (req, res) => {
+  try {
+    const result = await markdownRenderService.renderMarkdownFile(
+      'Braintree-NetSuite-Integration-Engineer-Training-Guide-v2025.1 (2).md',
+    );
+    res.json(result);
+  } catch (error) {
+    console.error('Error loading training guide:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to load training guide',
+    });
+  }
 });
 
 // POST: Generate personalized implementation guide

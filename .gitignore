@@ -28,3 +28,7 @@ build/
 # Temporary files
 *.tmp
 .cache/
+
+# PDF files
+*.pdf
+docs/*.pdf
